@@ -1,0 +1,22 @@
+[package]
+name = "genrepass"
+version = "1.0.0"
+authors = ["Alexander Chaplin Braz <contact@alexchaplinbraz.com>"]
+description = """Generate a readable password from an ordered list of words extracted from text.
+For improved security, numbers and special characters are inserted at random places."""
+documentation = "https://github.com/AlexChaplinBraz/genrepass"
+homepage = "https://github.com/AlexChaplinBraz/genrepass"
+repository = "https://github.com/AlexChaplinBraz/genrepass"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+keywords = ["generate", "readable", "secure", "password", "text", ]
+categories = ["command-line-utilities"]
+exclude = ["/releases"]
+
+[dependencies]
+deunicode = "1.1.1"
+rand = "0.7.3"
+regex = "1.3.9"
+structopt = "0.3.17"
+clipboard-ext = "0.2.0"

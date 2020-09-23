@@ -62,6 +62,10 @@ In case of a directory, it recursively parses every file inside it while ignorin
 
 Accepts UTF-8 characters, but translates them to ASCII for use in the password. So if a word in another language is encountered, it will be transformed into a kind of phonetic spelling in ASCII, and if an emoji is encountered, it will be translated into its meaning, for example, :D would become 'grinning'.
 
+## Builds for other systems
+
+I'm sure this program can be compiled for other platforms like macOS, but I didn't do it because I don't have the capability to test them. If anyone is willing to help with that, I'd appreciate it.
+
 ## History
 
 This is a port of my own shell script [genrepass.sh](https://github.com/AlexChaplinBraz/genrepass.sh). I've written it as practice while learning Rust and ended up improving it in various aspects.

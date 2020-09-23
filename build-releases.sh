@@ -14,9 +14,10 @@ build_target() {
     if cargo build --release --target $2; then
         printf 'Build finished correctly, packing...\n'
         if [ "$1" = 'zip' ]; then
-            zip -j releases/$4-$2-$3.zip target/$2/release/$5
+            zip -j releases/$4-$2-$3.zip target/$2/release/$5 LICENSE README.md
         elif [ "$1" = 'tar' ]; then
-            tar -zcf releases/$4-$2-$3.tar.gz -C target/$2/release $5
+            \cp LICENSE README.md target/$2/release
+            tar -zcf releases/$4-$2-$3.tar.gz -C target/$2/release $5 LICENSE README.md
         fi
         printf 'Release %s-%s-%s packed.\n\n' $4 $2 $3
     else

@@ -6,6 +6,26 @@ The point is to replace the standard password generation that is very tedious to
 
 Written based on a Computerphile video: [How to Choose a Password](https://youtu.be/3NjQ9b3pgIg).
 
+## Installation
+
+Currently available for both 32bit and 64bit versions of Linux and Windows.
+
+### Arch Linux
+
+Available in the AUR by the name of [genrepass-bin](https://aur.archlinux.org/packages/genrepass-bin/).
+
+`yay -S genrepass-bin`
+
+### Cargo
+
+Available through Cargo, which requires Rust to compile it from source.
+
+`cargo install genrepass`
+
+### Manual
+
+Download the appropriate [latest release](https://github.com/AlexChaplinBraz/genrepass/releases/latest) for your system, unpack and make it available in PATH.
+
 ## Usage
 
 `genrepass [FLAGS] [OPTIONS] <path>`

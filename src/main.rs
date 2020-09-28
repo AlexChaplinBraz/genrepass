@@ -254,43 +254,94 @@ struct Password {
     min_len: usize,
     max_len: usize,
     num: usize,
-    min_num: usize,
-    max_num: usize,
     special: usize,
-    min_special: usize,
-    max_special: usize,
     total_inserts: usize,
     upper: usize,
-    min_upper: usize,
-    max_upper: usize,
     lower: usize,
-    min_lower: usize,
-    max_lower: usize,
     force_upper: bool,
     force_lower: bool,
     insertables: Vec<char>,
 }
 
 impl Password {
-    fn new(args: &Args) -> Password {
-        Password {
-            password: String::new(),
+    fn new(args: &Args) -> Result<Password, Box<dyn Error>> {
+        let mut rng = thread_rng();
+
+        let mut min_len = 0;
+        let mut max_len = 0;
+        process_range(&args.length, &mut min_len, &mut max_len)?;
+        if max_len - min_len > 50 {
+            min_len = rng.gen_range(min_len, max_len - 49);
+            max_len = min_len + 50;
+        }
+
+        let mut min_num = 0;
+        let mut max_num = 0;
+        process_range(&args.num, &mut min_num, &mut max_num)?;
+        let num = rng.gen_range(min_num, max_num + 1);
+
+        let mut min_special = 0;
+        let mut max_special = 0;
+        process_range(&args.special, &mut min_special, &mut max_special)?;
+        let special = rng.gen_range(min_special, max_special + 1);
+
+        let mut min_upper = 0;
+        let mut max_upper = 0;
+        process_range(&args.upper, &mut min_upper, &mut max_upper)?;
+        let upper = rng.gen_range(min_upper, max_upper + 1);
+
+        let mut min_lower = 0;
+        let mut max_lower = 0;
+        process_range(&args.lower, &mut min_lower, &mut max_lower)?;
+        let lower = rng.gen_range(min_lower, max_lower + 1);
+
+        let total_inserts = num + special;
+        if total_inserts > max_len {
+            Err("special character amount exceeds password length")?;
+        }
+
+        if !args.replace {
+            if min_len < total_inserts {
+                Err("can't have password length be lower than the total amount of insertables")?;
+            }
+
+            min_len = min_len - total_inserts;
+            max_len = max_len - total_inserts;
+        }
+
+        let insertables = {
+            let mut chars = Vec::with_capacity(total_inserts);
+            let num_range = Uniform::new(0, 10);
+            let char_range = Uniform::new(0, args.special_chars.len());
+
+            for _ in 0..num {
+                let num = rng.sample(&num_range).to_string().chars().next().unwrap();
+                chars.push(num);
+            }
+
+            for _ in 0..special {
+                let index = rng.sample(&char_range);
+                let c = args.special_chars.chars().nth(index);
+                match c {
+                    Some(c) => chars.push(c.clone()),
+                    None => Err("unsuported special character")?,
+                }
+            }
+
+            chars.shuffle(&mut rng);
+            chars
+        };
+
+        Ok(Password {
+            password: String::with_capacity(max_len),
             reset_count: 0,
-            min_len: 0,
-            max_len: 0,
-            num: 0,
-            min_num: 0,
-            max_num: 0,
-            special: 0,
-            min_special: 0,
-            max_special: 0,
-            total_inserts: 0,
-            upper: 0,
-            min_upper: 0,
-            max_upper: 0,
-            lower: 0,
-            min_lower: 0,
-            max_lower: 0,
+            min_len,
+            max_len,
+            num,
+            special,
+            total_inserts,
+            upper,
+            lower,
             force_upper: {
                 if args.force_upper {
                     true
@@ -305,71 +356,8 @@ impl Password {
                     false
                 }
             },
-            insertables: Vec::new(),
-        }
-    }
-
-    fn configure(&mut self, args: &Args) -> Result<(), Box<dyn Error>> {
-        let mut rng = thread_rng();
-
-        process_range(&args.length, &mut self.min_len, &mut self.max_len)?;
-        if self.max_len - self.min_len > 50 {
-            self.min_len = rng.gen_range(self.min_len, self.max_len - 49);
-            self.max_len = self.min_len + 50;
-        }
-
-        process_range(&args.num, &mut self.min_num, &mut self.max_num)?;
-        self.num = rng.gen_range(self.min_num, self.max_num + 1);
-
-        process_range(&args.special, &mut self.min_special, &mut self.max_special)?;
-        self.special = rng.gen_range(self.min_special, self.max_special + 1);
-
-        process_range(&args.upper, &mut self.min_upper, &mut self.max_upper)?;
-        self.upper = rng.gen_range(self.min_upper, self.max_upper + 1);
-
-        process_range(&args.lower, &mut self.min_lower, &mut self.max_lower)?;
-        self.lower = rng.gen_range(self.min_lower, self.max_lower + 1);
-
-        self.total_inserts = self.num + self.special;
-        if self.total_inserts > self.max_len {
-            Err("special character amount exceeds password length")?;
-        }
-
-        if !args.replace {
-            if self.min_len < self.total_inserts {
-                Err("can't have password length be lower than the total amount of insertables")?;
-            }
-
-            self.min_len = self.min_len - self.total_inserts;
-            self.max_len = self.max_len - self.total_inserts;
-        }
-
-        self.insertables = {
-            let mut chars = Vec::with_capacity(self.total_inserts);
-            let num_range = Uniform::new(0, 10);
-            let char_range = Uniform::new(0, args.special_chars.len());
-
-            for _ in 0..self.num {
-                let num = rng.sample(&num_range).to_string().chars().next().unwrap();
-                chars.push(num);
-            }
-
-            for _ in 0..self.special {
-                let index = rng.sample(&char_range);
-                let c = args.special_chars.chars().nth(index);
-                match c {
-                    Some(c) => chars.push(c.clone()),
-                    None => Err("unsuported special character")?,
-                }
-            }
-
-            chars.shuffle(&mut rng);
-            chars
-        };
-
-        self.password = String::with_capacity(self.max_len);
-
-        Ok(())
+            insertables,
+        })
     }
 }
 
@@ -389,8 +377,7 @@ fn get_text_from_dir(dir: &Path, mut text: &mut String) -> Result<(), Box<dyn Er
 }
 
 fn generate_password(args: &Args, result: &mut String) -> Result<(), Box<dyn Error>> {
-    let mut pass = Password::new(&args);
-    pass.configure(&args)?;
+    let mut pass = Password::new(&args)?;
 
     get_pass_string(&args, &mut pass)?;
 

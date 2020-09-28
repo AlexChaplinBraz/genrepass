@@ -6,6 +6,23 @@ The point is to replace the standard password generation that is very tedious to
 
 Written based on a Computerphile video: [How to Choose a Password](https://youtu.be/3NjQ9b3pgIg).
 
+## Examples
+
+```
+> genrepass ~/Documents
+Hemanag6estogetami~ssion
+
+> genrepass -C ~/Documents
+Fr68omTheseMeth&odsY#ouCanT
+
+> genrepass -Cp5 ~/Documents
+ModsSo$ThatPeopleAre7AbleTo
+Shou$ldSt%illBeResp0ected
+ThisSoftw&areAndIn4co$rporate
+5Th~ingsT<0hatThrowYouOff
+AtLeastEvo]keA,Menta3lImage
+```
+
 ## Installation
 
 Currently available for both 32bit and 64bit versions of Linux and Windows.

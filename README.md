@@ -47,7 +47,7 @@ Download the appropriate [latest release](https://github.com/AlexChaplinBraz/gen
 
 `genrepass [FLAGS] [OPTIONS] <path>`
 
-## Flags
+### Flags
 
 `-C, --capitalise` Uppercase the first character of every word. Makes the password much easier to read, but also slightly less secure due to the predictability of having capitalised words. Still, the highly improved readability makes it worth it to always have it on.
 
@@ -72,7 +72,7 @@ Download the appropriate [latest release](https://github.com/AlexChaplinBraz/gen
 `-V, --version` Prints version information
 
 
-## Options
+### Options
 
 `-L, --length <length>` Set the length of the password. Can either be a range like 24-30, which will generate a password between that length, or it can be an exact number like 25 for a password of that exact length. Default: 24-30
 
@@ -91,13 +91,19 @@ Download the appropriate [latest release](https://github.com/AlexChaplinBraz/gen
 `-u, --upper <upper>` Amount of uppercase characters. Can take either a range like 2-4 or an exact amount like 2. If there are no uppercase characters, the '--force-upper' flag is turned on automatically to capitalise up to the specified amount of alphabetic
 characters. But if there's at least one uppercase character there won't be any capitalisation unless '--force-upper' is turned on manually. Default: 1-2
 
-## Args
+### Args
 
 `<path>` Path to text file or directory with text files to source words from.
 
 In case of a directory, it recursively parses every file inside it while ignoring non-plaintext files and following links.
 
 Accepts UTF-8 characters, but translates them to ASCII for use in the password. So if a word in another language is encountered, it will be transformed into a kind of phonetic spelling in ASCII, and if an emoji is encountered, it will be translated into its meaning, for example, :D would become 'grinning'.
+
+## Changelog
+
+### Version 1.0.1 - 2020-10-13
+
+- Switch from clipboard-ext to copypasta-ext, adding support for Wayland clipboard [[PR1]](https://github.com/AlexChaplinBraz/genrepass/pull/1)
 
 ## Builds for other systems
 

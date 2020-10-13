@@ -1,6 +1,6 @@
 [package]
 name = "genrepass"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Alexander Chaplin Braz <contact@alexchaplinbraz.com>"]
 description = """Generate a readable password from an ordered list of words extracted from text.
 For improved security, numbers and special characters are inserted at random places."""

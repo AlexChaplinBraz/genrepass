@@ -1,4 +1,4 @@
-use clipboard_ext::{prelude::*, x11_fork::ClipboardContext};
+use copypasta_ext::{prelude::*, x11_fork::ClipboardContext};
 use deunicode::deunicode;
 use rand::{distributions::Uniform, seq::SliceRandom, thread_rng, Rng};
 use regex::Regex;
@@ -31,8 +31,9 @@ fn run() -> Result<(), Box<dyn Error>> {
     }
 
     if args.clipboard {
-        let mut ctx: ClipboardContext = ClipboardProvider::new()?;
-        ctx.set_contents(passwords.into())?;
+        ClipboardContext::new()
+            .and_then(|mut ctx| ctx.set_contents(passwords.into()))
+            .map_err(|e| -> Box<dyn Error> { e })?;
     } else {
         print!("{}", passwords);
     }

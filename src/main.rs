@@ -298,12 +298,12 @@ impl Password {
 
         let total_inserts = num + special;
         if total_inserts > max_len {
-            Err("special character amount exceeds password length")?;
+            Err("special character amount can't exceed maximum password length")?;
         }
 
         if !args.replace {
             if min_len < total_inserts {
-                Err("can't have password length be lower than the total amount of insertables")?;
+                Err("minimum password length can't be lower than the total amount of insertables")?;
             }
 
             min_len = min_len - total_inserts;
@@ -325,7 +325,7 @@ impl Password {
                 let c = args.special_chars.chars().nth(index);
                 match c {
                     Some(c) => chars.push(c.clone()),
-                    None => Err("unsuported special character")?,
+                    None => Err("unsuported special character found in insertables")?,
                 }
             }
 

@@ -113,7 +113,7 @@ pub struct PassConfig {
     /// which in this case is simply truncating the password to the maximum length.
     ///
     /// **Default: 10**
-    pub max_resets: usize,
+    pub reset_amount: usize,
 
     /// ### Set the length of the password
     ///
@@ -131,14 +131,14 @@ pub struct PassConfig {
     /// in the password if 'keep-nums' is activated.
     ///
     /// **Default: 1-2**
-    pub nums: String,
+    pub number_amount: String,
 
     /// ### Amount of special characters to insert
     ///
     /// Can take either a range like 2-4 or an exact amount like 2.
     ///
     /// **Default: 1-2**
-    pub specials: String,
+    pub special_chars_amount: String,
 
     /// ### The special characters to insert
     ///
@@ -156,7 +156,7 @@ pub struct PassConfig {
     /// unless [`force_upper`](struct.PassConfig.html#structfield.force_upper) is turned on manually.
     ///
     /// **Default: 1-2**
-    pub upper: String,
+    pub upper_amount: String,
 
     /// ### Amount of lowercase characters
     ///
@@ -167,7 +167,7 @@ pub struct PassConfig {
     /// unless [`force_lower`](struct.PassConfig.html#structfield.force_lower) is turned on manually.
     ///
     /// **Default: 1-2**
-    pub lower: String,
+    pub lower_amount: String,
 
     /// ### Choose to keep numbers from the source in the password
     ///
@@ -216,13 +216,13 @@ impl Default for PassConfig {
             replace: false,
             randomise: false,
             pass_amount: 1,
-            max_resets: 10,
+            reset_amount: 10,
             length: String::from("24-30"),
-            nums: String::from("1-2"),
-            specials: String::from("1-2"),
+            number_amount: String::from("1-2"),
+            special_chars_amount: String::from("1-2"),
             special_chars: String::from("^!(-_=)$<[@.#]>%{~,+}&*"),
-            upper: String::from("1-2"),
-            lower: String::from("1-2"),
+            upper_amount: String::from("1-2"),
+            lower_amount: String::from("1-2"),
             keep_numbers: false,
             force_upper: false,
             force_lower: false,
@@ -362,7 +362,7 @@ impl PassConfig {
             }
         };
 
-        let (_, _) = match process_range(&self.nums) {
+        let (_, _) = match process_range(&self.number_amount) {
             Ok(a) => a,
             Err(e) => {
                 return Err(ValidationError::InvalidRange {
@@ -372,7 +372,7 @@ impl PassConfig {
             }
         };
 
-        let (_, _) = match process_range(&self.specials) {
+        let (_, _) = match process_range(&self.special_chars_amount) {
             Ok(a) => a,
             Err(e) => {
                 return Err(ValidationError::InvalidRange {
@@ -382,7 +382,7 @@ impl PassConfig {
             }
         };
 
-        let (_, _) = match process_range(&self.upper) {
+        let (_, _) = match process_range(&self.upper_amount) {
             Ok(a) => a,
             Err(e) => {
                 return Err(ValidationError::InvalidRange {
@@ -392,7 +392,7 @@ impl PassConfig {
             }
         };
 
-        let (_, _) = match process_range(&self.lower) {
+        let (_, _) = match process_range(&self.lower_amount) {
             Ok(a) => a,
             Err(e) => {
                 return Err(ValidationError::InvalidRange {
@@ -415,13 +415,13 @@ impl PassConfig {
             replace: self.replace,
             randomise: self.randomise,
             pass_amount: self.pass_amount,
-            max_resets: self.max_resets,
+            reset_amount: self.reset_amount,
             length: self.length.clone(),
-            nums: self.nums.clone(),
-            specials: self.specials.clone(),
+            number_amount: self.number_amount.clone(),
+            special_chars_amount: self.special_chars_amount.clone(),
             special_chars: self.special_chars.clone(),
-            upper: self.upper.clone(),
-            lower: self.lower.clone(),
+            upper_amount: self.upper_amount.clone(),
+            lower_amount: self.lower_amount.clone(),
             keep_numbers: self.keep_numbers,
             force_upper: self.force_upper,
             force_lower: self.force_lower,
@@ -439,13 +439,13 @@ pub struct ValidatedConfig {
     replace: bool,
     randomise: bool,
     pass_amount: usize,
-    max_resets: usize,
+    reset_amount: usize,
     length: String,
-    nums: String,
-    specials: String,
+    number_amount: String,
+    special_chars_amount: String,
     special_chars: String,
-    upper: String,
-    lower: String,
+    upper_amount: String,
+    lower_amount: String,
     keep_numbers: bool,
     force_upper: bool,
     force_lower: bool,
@@ -535,16 +535,16 @@ impl Password {
             max_len = min_len + 50;
         }
 
-        let (min_num, max_num) = process_range(&config.nums).unwrap();
+        let (min_num, max_num) = process_range(&config.number_amount).unwrap();
         let num = rng.gen_range(min_num, max_num + 1);
 
-        let (min_special, max_special) = process_range(&config.specials).unwrap();
+        let (min_special, max_special) = process_range(&config.special_chars_amount).unwrap();
         let special = rng.gen_range(min_special, max_special + 1);
 
-        let (min_upper, max_upper) = process_range(&config.upper).unwrap();
+        let (min_upper, max_upper) = process_range(&config.upper_amount).unwrap();
         let upper = rng.gen_range(min_upper, max_upper + 1);
 
-        let (min_lower, max_lower) = process_range(&config.lower).unwrap();
+        let (min_lower, max_lower) = process_range(&config.lower_amount).unwrap();
         let lower = rng.gen_range(min_lower, max_lower + 1);
 
         let mut total_inserts = num + special;
@@ -636,7 +636,7 @@ impl Password {
                                 && self.password.len() <= self.max_len
                             {
                                 break;
-                            } else if self.reset_count >= config.max_resets {
+                            } else if self.reset_count >= config.reset_amount {
                                 self.password.truncate(self.max_len);
                                 break;
                             } else {

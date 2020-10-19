@@ -1,6 +1,6 @@
 [package]
 name = "genrepass"
-version = "1.1.1"
+version = "1.1.2"
 authors = ["Alexander Chaplin Braz <contact@alexchaplinbraz.com>"]
 description = """Library for generating a readable password from an ordered list
 of words extracted from text. For improved security,
@@ -14,7 +14,7 @@ keywords = ["generate", "readable", "secure", "password", "text", ]
 categories = ["authentication"]
 
 [dependencies]
-deunicode = "1.1"
-rand = "0.7"
-regex = "1.4"
-snafu = "0.6"
+deunicode = "1.1.1"
+rand = "0.7.3"
+regex = "1.4.1"
+snafu = "0.6.9"

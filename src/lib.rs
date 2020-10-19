@@ -658,12 +658,6 @@ impl Password {
                 }
             }
         }
-
-        // TODO: Maybe unreachable? Don't remember why I did this...
-        if self.password.len() == 0 {
-            //Err("Empty password")?;
-            unreachable!("Passowrd is 0 length");
-        }
     }
 
     fn replace_chars(&mut self) {
@@ -693,6 +687,11 @@ impl Password {
 
     fn insert_chars(&mut self) {
         let mut rng = thread_rng();
+
+        if self.password.len() == 0 {
+            self.password.push(self.insertables.pop().unwrap());
+            self.total_inserts -= 1;
+        }
 
         for _ in 0..self.total_inserts {
             let index = rng.gen_range(0, self.password.len());

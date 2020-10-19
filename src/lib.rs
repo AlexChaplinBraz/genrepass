@@ -131,14 +131,14 @@ pub struct PassConfig {
     /// in the password if 'keep-nums' is activated.
     ///
     /// **Default: 1-2**
-    pub num: String,
+    pub nums: String,
 
     /// ### Amount of special characters to insert
     ///
     /// Can take either a range like 2-4 or an exact amount like 2.
     ///
     /// **Default: 1-2**
-    pub special: String,
+    pub specials: String,
 
     /// ### The special characters to insert
     ///
@@ -218,8 +218,8 @@ impl Default for PassConfig {
             pass_amount: 1,
             max_resets: 10,
             length: String::from("24-30"),
-            num: String::from("1-2"),
-            special: String::from("1-2"),
+            nums: String::from("1-2"),
+            specials: String::from("1-2"),
             special_chars: String::from("^!(-_=)$<[@.#]>%{~,+}&*"),
             upper: String::from("1-2"),
             lower: String::from("1-2"),
@@ -362,7 +362,7 @@ impl PassConfig {
             }
         };
 
-        let (_, _) = match process_range(&self.num) {
+        let (_, _) = match process_range(&self.nums) {
             Ok(a) => a,
             Err(e) => {
                 return Err(ValidationError::InvalidRange {
@@ -372,7 +372,7 @@ impl PassConfig {
             }
         };
 
-        let (_, _) = match process_range(&self.special) {
+        let (_, _) = match process_range(&self.specials) {
             Ok(a) => a,
             Err(e) => {
                 return Err(ValidationError::InvalidRange {
@@ -417,8 +417,8 @@ impl PassConfig {
             pass_amount: self.pass_amount,
             max_resets: self.max_resets,
             length: self.length.clone(),
-            num: self.num.clone(),
-            special: self.special.clone(),
+            nums: self.nums.clone(),
+            specials: self.specials.clone(),
             special_chars: self.special_chars.clone(),
             upper: self.upper.clone(),
             lower: self.lower.clone(),
@@ -441,8 +441,8 @@ pub struct ValidatedConfig {
     pass_amount: usize,
     max_resets: usize,
     length: String,
-    num: String,
-    special: String,
+    nums: String,
+    specials: String,
     special_chars: String,
     upper: String,
     lower: String,
@@ -535,10 +535,10 @@ impl Password {
             max_len = min_len + 50;
         }
 
-        let (min_num, max_num) = process_range(&config.num).unwrap();
+        let (min_num, max_num) = process_range(&config.nums).unwrap();
         let num = rng.gen_range(min_num, max_num + 1);
 
-        let (min_special, max_special) = process_range(&config.special).unwrap();
+        let (min_special, max_special) = process_range(&config.specials).unwrap();
         let special = rng.gen_range(min_special, max_special + 1);
 
         let (min_upper, max_upper) = process_range(&config.upper).unwrap();

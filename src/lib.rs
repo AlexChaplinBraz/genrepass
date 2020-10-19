@@ -95,7 +95,7 @@ pub struct PassConfig {
     /// and you want to have a different order with each run.
     ///
     /// **Default: false**
-    pub randomize: bool,
+    pub randomise: bool,
 
     /// ### Amount of passwords to generate
     ///
@@ -214,7 +214,7 @@ impl Default for PassConfig {
         Self {
             capitalise: false,
             replace: false,
-            randomize: false,
+            randomise: false,
             pass_amount: 1,
             max_resets: 10,
             length: String::from("24-30"),
@@ -292,7 +292,7 @@ impl PassConfig {
             }
         }
 
-        if self.randomize {
+        if self.randomise {
             self.words.shuffle(&mut thread_rng());
         }
 
@@ -334,7 +334,7 @@ impl PassConfig {
             }
         }
 
-        if self.randomize {
+        if self.randomise {
             self.words.shuffle(&mut thread_rng());
         }
     }
@@ -413,7 +413,7 @@ impl PassConfig {
         Ok(ValidatedConfig {
             capitalise: self.capitalise,
             replace: self.replace,
-            randomize: self.randomize,
+            randomise: self.randomise,
             pass_amount: self.pass_amount,
             max_resets: self.max_resets,
             length: self.length.clone(),
@@ -437,7 +437,7 @@ impl PassConfig {
 pub struct ValidatedConfig {
     capitalise: bool,
     replace: bool,
-    randomize: bool,
+    randomise: bool,
     pass_amount: usize,
     max_resets: usize,
     length: String,

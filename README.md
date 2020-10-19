@@ -1,6 +1,6 @@
 # Readable password generator (library)
 
-Library for **gen**erating a **re**adable **pass**word from an ordered list of words extracted from text. For improved security, numbers and special characters are inserted at random places.
+Library for **gen**erating **re**adable **pass**words from an ordered list of words extracted from text. For improved security, numbers and special characters are inserted at random places.
 
 The point is to replace the standard password generation that is very tedious to input manually, with a still very secure but much easier to write password. For the rare occasion where you have to input it manually, like on a smartphone you're not syncing them to. It also makes for some interesting passwords, depending on what you choose to use as source.
 

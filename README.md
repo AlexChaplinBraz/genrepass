@@ -25,6 +25,10 @@ Can be found at [docs.rs/genrepass](https://docs.rs/genrepass).
 
 ## Changelog
 
+### Version 1.1.2 - 2020-10-19
+
+- Fix reachable unreachable. A special case where the insertables amount is higher than the password length in insert mode.
+
 ### Version 1.1.1 - 2020-10-19
 
 - Fix spelling.

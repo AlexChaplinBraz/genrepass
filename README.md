@@ -27,6 +27,8 @@ Can be found at [docs.rs/genrepass](https://docs.rs/genrepass).
 
 ### Version 1.1.3 - 2020-10-19
 
+Note: two of these last three versions change the API, but I didn't want to bump the major version for something so minor, and since it was all in the same day there were no users yet. I've yanked the previous versions because semantic versioning isn't being followed.
+
 - Change fields with quantities to use the "_amount" suffix.
 
 ### Version 1.1.2 - 2020-10-19

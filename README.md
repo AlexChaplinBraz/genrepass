@@ -58,7 +58,8 @@ The command line application that was once part of this crate is now called [gen
 
 ## Donate
 
-Please do feel free to [support me](https://alexchaplinbraz.com/donate) if I was helpful and you aren't in a tight financial situation.
+Please consider supporting me through [donate.alexchaplinbraz.com](https://donate.alexchaplinbraz.com/?project=2)
+to motivate me to keep working on this project.
 
 ## License
 

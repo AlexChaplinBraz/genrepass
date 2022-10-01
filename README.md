@@ -29,8 +29,8 @@ Can be found at [docs.rs/genrepass](https://docs.rs/genrepass).
 
 ## History
 
-This used to be a binary crate that was a port of my own shell script
-[`genrepass.sh`](https://github.com/AlexChaplinBraz/shell-scripts/tree/master/genrepass),
+This used to be a binary crate that was a port of
+[my own shell script](https://github.com/AlexChaplinBraz/shell-scripts/tree/master/genrepass),
 which I wrote as practice while learning Rust and ended up improving it in various aspects.
 
 Realising the main functionality could be made into a library,

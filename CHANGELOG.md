@@ -6,7 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-<!--BEGIN=0.0.0-->
+
+## [1.1.4] - 2022-10-01
+<!--BEGIN=1.1.4-->
+Last 1.x release before refactor. Updated all dependencies.
+
 ### Added
 
 - GitHub Actions workflow for releasing new versions.
@@ -15,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Documentation links.
 - Typos.
-<!--END=0.0.0-->
+<!--END=1.1.4-->
 ## [1.1.3] - 2020-10-19
 
 Note: two of these last three versions changed the API,
@@ -59,7 +63,8 @@ so, I've simply yanked the previous versions because semantic versioning isn't b
 
 Ported my [`genrepass.sh`](https://github.com/AlexChaplinBraz/shell-scripts/tree/master/genrepass) script to Rust.
 
-[Unreleased]: https://github.com/AlexChaplinBraz/genrepass/compare/ccf3e03...HEAD
+[Unreleased]: https://github.com/AlexChaplinBraz/genrepass/compare/1.1.4...HEAD
+[1.1.4]: https://github.com/AlexChaplinBraz/genrepass/compare/ccf3e03...1.1.4
 [1.1.3]: https://github.com/AlexChaplinBraz/genrepass/compare/31f67db...ccf3e03
 [1.1.2]: https://github.com/AlexChaplinBraz/genrepass/compare/dfc17bd...31f67db
 [1.1.1]: https://github.com/AlexChaplinBraz/genrepass/compare/3d8fd4e...dfc17bd

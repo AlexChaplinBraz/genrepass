@@ -16,8 +16,8 @@ jobs:
 
       - name: Extract release title
         run: |
-          title=$(grep "## \[${{ env.RELEASE_VERSION }}\] - .*: " CHANGELOG.md)
-          if [ "$title" ]; then
+          title=$(grep "## \[${{ env.RELEASE_VERSION }}\]" CHANGELOG.md)
+          if $(printf '%s' "$title" | grep -q ": "); then
             printf '%s - %s' "${{ env.RELEASE_VERSION }}" "${title#*: }" > title
           else
             printf '%s' "${{ env.RELEASE_VERSION }}" > title
@@ -60,6 +60,7 @@ jobs:
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
+          toolchain: stable
           profile: minimal
 
       - name: Test library
@@ -95,6 +96,7 @@ jobs:
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
+          toolchain: stable
           profile: minimal
 
       - name: Publish crate

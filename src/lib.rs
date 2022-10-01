@@ -531,21 +531,21 @@ impl Password {
 
         let (mut min_len, mut max_len) = process_range(&config.length).unwrap();
         if max_len - min_len > 50 {
-            min_len = rng.gen_range(min_len, max_len - 49);
+            min_len = rng.gen_range(min_len..=(max_len - 50));
             max_len = min_len + 50;
         }
 
         let (min_num, max_num) = process_range(&config.number_amount).unwrap();
-        let num = rng.gen_range(min_num, max_num + 1);
+        let num = rng.gen_range(min_num..=max_num);
 
         let (min_special, max_special) = process_range(&config.special_chars_amount).unwrap();
-        let special = rng.gen_range(min_special, max_special + 1);
+        let special = rng.gen_range(min_special..=max_special);
 
         let (min_upper, max_upper) = process_range(&config.upper_amount).unwrap();
-        let upper = rng.gen_range(min_upper, max_upper + 1);
+        let upper = rng.gen_range(min_upper..=max_upper);
 
         let (min_lower, max_lower) = process_range(&config.lower_amount).unwrap();
-        let lower = rng.gen_range(min_lower, max_lower + 1);
+        let lower = rng.gen_range(min_lower..=max_lower);
 
         let mut total_inserts = num + special;
         if total_inserts > max_len {
@@ -611,7 +611,7 @@ impl Password {
 
     fn get_pass_string(&mut self, config: &ValidatedConfig) {
         let mut rng = thread_rng();
-        let start_index = rng.gen_range(0, config.words.len() - 1);
+        let start_index = rng.gen_range(0..config.words.len());
 
         let mut text = config.words.clone();
         let mut words = text.iter_mut().skip(start_index).peekable();
@@ -694,7 +694,7 @@ impl Password {
         }
 
         for _ in 0..self.total_inserts {
-            let index = rng.gen_range(0, self.password.len());
+            let index = rng.gen_range(0..self.password.len());
             let c = self.insertables.pop().unwrap();
 
             self.password.insert(index, c);
@@ -732,7 +732,7 @@ impl Password {
 
         if self.force_upper && !config.dont_upper {
             for _ in 0..self.upper {
-                let i = l_indeces.remove(rng.gen_range(0, l_indeces.len()));
+                let i = l_indeces.remove(rng.gen_range(0..l_indeces.len()));
                 capitalise(&mut self.password.as_mut_str(), i)
             }
         }
@@ -760,7 +760,7 @@ impl Password {
 
         if self.force_lower && !config.dont_lower {
             for _ in 0..self.lower {
-                let i = u_indeces.remove(rng.gen_range(0, u_indeces.len()));
+                let i = u_indeces.remove(rng.gen_range(0..u_indeces.len()));
                 decapitalise(&mut self.password.as_mut_str(), i)
             }
         }

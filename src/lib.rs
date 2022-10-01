@@ -16,7 +16,7 @@ Written based on a Computerphile video:
 
 # Example
 
-```
+```no_run
 use genrepass::*;
 use std::error::Error;
 use std::process::exit;

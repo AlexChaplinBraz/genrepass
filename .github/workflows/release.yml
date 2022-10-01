@@ -1,0 +1,103 @@
+name: Release genrepass
+on:
+  push:
+    tags:
+    - '[0-9]+.[0-9]+.[0-9]+*'
+jobs:
+  preparations:
+    name: Preparations
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Create release version env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Extract release title
+        run: |
+          title=$(grep "## \[${{ env.RELEASE_VERSION }}\] - .*: " CHANGELOG.md)
+          if [ "$title" ]; then
+            printf '%s - %s' "${{ env.RELEASE_VERSION }}" "${title#*: }" > title
+          else
+            printf '%s' "${{ env.RELEASE_VERSION }}" > title
+          fi
+
+      - name: Save release title
+        uses: actions/upload-artifact@v2
+        with:
+          name: release
+          path: title
+          if-no-files-found: error
+
+      - name: Extract release changelog
+        run: |
+          begin=$(grep -nm1 "<\!--BEGIN=${{ env.RELEASE_VERSION }}-->" CHANGELOG.md | cut -d: -f1)
+          end=$(grep -nm1 "<\!--END=${{ env.RELEASE_VERSION }}-->" CHANGELOG.md | cut -d: -f1)
+          if [ -z "$begin" ] || [ -z "$end" ]; then
+            echo 'Failed to find the release body tags for version ${{ env.RELEASE_VERSION }} in CHANGELOG.md.'
+            exit 1
+          fi
+          sed -n "$((begin+1)),$((end-1))p" CHANGELOG.md > changelog.md
+
+      - name: Save release changelog
+        uses: actions/upload-artifact@v2
+        with:
+          name: release
+          path: changelog.md
+          if-no-files-found: error
+
+  test-package:
+    name: Test package
+    needs: preparations
+    env:
+      RUST_BACKTRACE: 1
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+
+      - name: Test library
+        shell: bash
+        run: cargo test --verbose
+
+  create-release:
+    name: Create release
+    needs: test-package
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Load artifacts
+        uses: actions/download-artifact@v2
+
+      - name: Create release title env
+        run: echo "RELEASE_TITLE=$(cat release/title)" >> $GITHUB_ENV
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          name: ${{ env.RELEASE_TITLE }}
+          bodyFile: release/changelog.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-crate:
+    name: Publish crate
+    needs: create-release
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+
+      - name: Publish crate
+        run: |
+          cargo login ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          cargo publish --no-verify

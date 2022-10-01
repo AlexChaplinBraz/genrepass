@@ -472,7 +472,7 @@ impl ValidatedConfig {
 pub enum ValidationError {
     /// For when the range processor doesn't receive either a "20-30" or a "25" style string.
     ///
-    /// The range processor does some cleanup beforehand to remove trailing and repeating dashes.
+    /// The range processor does some clean-up beforehand to remove trailing and repeating dashes.
     /// So `---20-----30--` becomes `20-30`, and gives no error or custom message in this case.
     #[snafu(display("Invalid {} range: {}", field,  message.message))]
     InvalidRange { field: String, message: RangeError },
@@ -709,7 +709,7 @@ impl Password {
             .matches(|c: char| c.is_ascii_uppercase())
             .count();
 
-        let mut l_indeces: Vec<usize> = self
+        let mut l_indices: Vec<usize> = self
             .password
             .char_indices()
             .filter(|(_, c)| c.is_ascii_lowercase())
@@ -726,18 +726,18 @@ impl Password {
             self.upper -= u_amount;
         }
 
-        if self.upper > l_indeces.len() {
-            self.upper = l_indeces.len();
+        if self.upper > l_indices.len() {
+            self.upper = l_indices.len();
         }
 
         if self.force_upper && !config.dont_upper {
             for _ in 0..self.upper {
-                let i = l_indeces.remove(rng.gen_range(0..l_indeces.len()));
+                let i = l_indices.remove(rng.gen_range(0..l_indices.len()));
                 capitalise(&mut self.password.as_mut_str(), i)
             }
         }
 
-        let mut u_indeces: Vec<usize> = self
+        let mut u_indices: Vec<usize> = self
             .password
             .char_indices()
             .filter(|(_, c)| c.is_ascii_uppercase())
@@ -746,21 +746,21 @@ impl Password {
             .map(|(i, _)| i)
             .collect();
 
-        if l_indeces.len() == 0 {
+        if l_indices.len() == 0 {
             self.force_lower = true;
-        } else if l_indeces.len() >= self.lower {
+        } else if l_indices.len() >= self.lower {
             self.force_lower = false;
         } else {
-            self.lower -= l_indeces.len();
+            self.lower -= l_indices.len();
         }
 
-        if self.lower > u_indeces.len() {
-            self.lower = u_indeces.len();
+        if self.lower > u_indices.len() {
+            self.lower = u_indices.len();
         }
 
         if self.force_lower && !config.dont_lower {
             for _ in 0..self.lower {
-                let i = u_indeces.remove(rng.gen_range(0..u_indeces.len()));
+                let i = u_indices.remove(rng.gen_range(0..u_indices.len()));
                 decapitalise(&mut self.password.as_mut_str(), i)
             }
         }

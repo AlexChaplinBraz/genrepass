@@ -150,10 +150,10 @@ pub struct PassConfig {
     /// ### Amount of uppercase characters
     ///
     /// Can take either a range like 2-4 or an exact amount like 2. If there are no
-    /// uppercase characters, the [`force_upper`](struct.PassConfig.html#structfield.force_upper)
+    /// uppercase characters, the [`force_upper`](PassConfig#structfield.force_upper)
     /// flag is turned on automatically to capitalise up to the specified amount of alphabetic characters.
     /// But if there's at least one uppercase character there won't be any capitalisation
-    /// unless [`force_upper`](struct.PassConfig.html#structfield.force_upper) is turned on manually.
+    /// unless [`force_upper`](PassConfig#structfield.force_upper) is turned on manually.
     ///
     /// **Default: 1-2**
     pub upper_amount: String,
@@ -161,10 +161,10 @@ pub struct PassConfig {
     /// ### Amount of lowercase characters
     ///
     /// Can take either a range like 2-4 or an exact amount like 2. If there are no
-    /// lowercase characters, the [`force_lower`](struct.PassConfig.html#structfield.force_lower)
+    /// lowercase characters, the [`force_lower`](PassConfig#structfield.force_lower)
     /// flag is turned on automatically to decapitalise up to the specified amount of alphabetic characters.
     /// But if there's at least one lowercase character there won't be any decapitalisation
-    /// unless [`force_lower`](struct.PassConfig.html#structfield.force_lower) is turned on manually.
+    /// unless [`force_lower`](PassConfig#structfield.force_lower) is turned on manually.
     ///
     /// **Default: 1-2**
     pub lower_amount: String,
@@ -179,28 +179,28 @@ pub struct PassConfig {
 
     /// ### Force the specified amount of uppercase characters
     ///
-    /// Gets ignored if [`dont_upper`](struct.PassConfig.html#structfield.dont_upper) is also set.
+    /// Gets ignored if [`dont_upper`](PassConfig#structfield.dont_upper) is also set.
     ///
     /// **Default: false**
     pub force_upper: bool,
 
     /// ### Force the specified amount of lowercase characters
     ///
-    /// Gets ignored if [`dont_lower`](struct.PassConfig.html#structfield.dont_lower) is also set.
+    /// Gets ignored if [`dont_lower`](PassConfig#structfield.dont_lower) is also set.
     ///
     /// **Default: false**
     pub force_lower: bool,
 
     /// ### Don't uppercase at all to keep original casing
     ///
-    /// Ignores [`force_upper`](struct.PassConfig.html#structfield.force_upper), both manual and automatic.
+    /// Ignores [`force_upper`](PassConfig#structfield.force_upper), both manual and automatic.
     ///
     /// **Default: false**
     pub dont_upper: bool,
 
     /// ### Don't lowercase at all to keep original casing
     ///
-    /// Ignores [`force_lower`](struct.PassConfig.html#structfield.force_lower), both manual and automatic.
+    /// Ignores [`force_lower`](PassConfig#structfield.force_lower), both manual and automatic.
     ///
     /// **Default: false**
     pub dont_lower: bool,
@@ -348,9 +348,9 @@ impl PassConfig {
     ///
     /// # Errors:
     ///
-    /// Each error has a message, especially [`InvalidRange`](enum.ValidationError.html#variant.InvalidRange),
+    /// Each error has a message, especially [`InvalidRange`](ValidationError#variant.InvalidRange),
     /// which specifies the field the error came from.
-    /// Read [`ValidationError`](enum.ValidationError.html) for more information.
+    /// Read [`ValidationError`] for more information.
     pub fn validate(&self) -> Result<ValidatedConfig> {
         let (_, _) = match process_range(&self.length) {
             Ok(a) => a,
@@ -482,7 +482,7 @@ pub enum ValidationError {
     #[snafu(display("No words for password generation"))]
     NoWords,
 
-    /// For when non-ASCII characters are found in [`special_chars`](struct.Config.html#structfield.special_chars).
+    /// For when non-ASCII characters are found in [`special_chars`](PassConfig#structfield.special_chars).
     #[snafu(display("Non-ASCII special characters aren't allowed for insertables"))]
     NonAsciiSpecialChars,
 }

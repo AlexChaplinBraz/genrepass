@@ -52,7 +52,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     let validated = config.validate()?;
 
     // Generate the password/s based on the validated configuration.
-    let passwords = validated.generate();
+    let passwords = validated.generate_passwords();
 
     // Use the vector however you need.
     // In this case we put each password on a separate line and print them.
@@ -279,12 +279,11 @@ impl PassConfig {
             text = deunicode(&text);
         }
 
-        let re;
-        if self.keep_numbers {
-            re = Regex::new(r"\w+").unwrap();
+        let re = if self.keep_numbers {
+            Regex::new(r"\w+").unwrap()
         } else {
-            re = Regex::new(r"[^\d\W]+").unwrap();
-        }
+            Regex::new(r"[^\d\W]+").unwrap()
+        };
 
         for caps in re.captures_iter(&text) {
             if let Some(cap) = caps.get(0) {
@@ -321,12 +320,11 @@ impl PassConfig {
             }
         };
 
-        let re;
-        if self.keep_numbers {
-            re = Regex::new(r"\w+").unwrap();
+        let re = if self.keep_numbers {
+            Regex::new(r"\w+").unwrap()
         } else {
-            re = Regex::new(r"[^\d\W]+").unwrap();
-        }
+            Regex::new(r"[^\d\W]+").unwrap()
+        };
 
         for caps in re.captures_iter(ascii) {
             if let Some(cap) = caps.get(0) {
@@ -456,11 +454,11 @@ pub struct ValidatedConfig {
 
 impl ValidatedConfig {
     /// Generate a vector of passwords.
-    pub fn generate(&self) -> Vec<String> {
+    pub fn generate_passwords(&self) -> Vec<String> {
         let mut passwords = Vec::new();
 
         for _ in 0..self.pass_amount {
-            passwords.push(Password::new(&self));
+            passwords.push(Password::generate(self));
         }
 
         passwords
@@ -510,10 +508,10 @@ struct Password {
 }
 
 impl Password {
-    fn new(config: &ValidatedConfig) -> String {
-        let mut pass = Password::init(&config);
+    fn generate(config: &ValidatedConfig) -> String {
+        let mut pass = Password::init(config);
 
-        pass.get_pass_string(&config);
+        pass.get_pass_string(config);
 
         if config.replace {
             pass.replace_chars();
@@ -521,7 +519,7 @@ impl Password {
             pass.insert_chars();
         }
 
-        pass.ensure_case(&config);
+        pass.ensure_case(config);
 
         pass.password
     }
@@ -575,7 +573,7 @@ impl Password {
                 let index = rng.sample(&char_range);
                 let c = config.special_chars.chars().nth(index);
                 if let Some(c) = c {
-                    chars.push(c.clone())
+                    chars.push(c)
                 }
             }
 
@@ -591,20 +589,8 @@ impl Password {
             total_inserts,
             upper,
             lower,
-            force_upper: {
-                if config.force_upper {
-                    true
-                } else {
-                    false
-                }
-            },
-            force_lower: {
-                if config.force_lower {
-                    true
-                } else {
-                    false
-                }
-            },
+            force_upper: config.force_upper,
+            force_lower: config.force_lower,
             insertables,
         }
     }
@@ -617,9 +603,9 @@ impl Password {
         let mut words = text.iter_mut().skip(start_index).peekable();
 
         loop {
-            if let Some(mut w) = words.next() {
+            if let Some(w) = words.next() {
                 if config.capitalise {
-                    capitalise(&mut w, 0);
+                    capitalise(w, 0);
                 }
 
                 self.password.push_str(w.as_str());
@@ -644,9 +630,9 @@ impl Password {
                                 self.password.clear();
                                 continue;
                             }
-                        } else if self.password.len() < self.min_len {
-                            continue;
-                        } else if p.len() <= allowance && rng.gen_bool(0.8) {
+                        } else if self.password.len() < self.min_len
+                            || p.len() <= allowance && rng.gen_bool(0.8)
+                        {
                             continue;
                         } else {
                             break;
@@ -688,7 +674,7 @@ impl Password {
     fn insert_chars(&mut self) {
         let mut rng = thread_rng();
 
-        if self.password.len() == 0 {
+        if self.password.is_empty() {
             self.password.push(self.insertables.pop().unwrap());
             self.total_inserts -= 1;
         }
@@ -733,7 +719,7 @@ impl Password {
         if self.force_upper && !config.dont_upper {
             for _ in 0..self.upper {
                 let i = l_indices.remove(rng.gen_range(0..l_indices.len()));
-                capitalise(&mut self.password.as_mut_str(), i)
+                capitalise(self.password.as_mut_str(), i)
             }
         }
 
@@ -746,7 +732,7 @@ impl Password {
             .map(|(i, _)| i)
             .collect();
 
-        if l_indices.len() == 0 {
+        if l_indices.is_empty() {
             self.force_lower = true;
         } else if l_indices.len() >= self.lower {
             self.force_lower = false;
@@ -761,19 +747,19 @@ impl Password {
         if self.force_lower && !config.dont_lower {
             for _ in 0..self.lower {
                 let i = u_indices.remove(rng.gen_range(0..u_indices.len()));
-                decapitalise(&mut self.password.as_mut_str(), i)
+                decapitalise(self.password.as_mut_str(), i)
             }
         }
     }
 }
 
-fn get_text_from_dir(dir: impl AsRef<Path>, mut text: &mut String) -> Result<(), std::io::Error> {
+fn get_text_from_dir(dir: impl AsRef<Path>, text: &mut String) -> Result<(), std::io::Error> {
     for entry in fs::read_dir(dir)? {
         let entry = entry?;
         let path = entry.path();
 
         if path.is_dir() {
-            get_text_from_dir(&path, &mut text)?;
+            get_text_from_dir(&path, text)?;
         } else {
             text.push_str(fs::read_to_string(&path).unwrap_or_default().as_str());
         }
@@ -814,8 +800,8 @@ fn process_range(range: &str) -> RangeResult<(usize, usize)> {
         });
     }
 
-    if range.contains("-") {
-        let r: Vec<&str> = range.split("-").collect();
+    if range.contains('-') {
+        let r: Vec<&str> = range.split('-').collect();
         min = usize::from_str(r[0]).unwrap();
         max = usize::from_str(r[1]).unwrap();
 
@@ -828,7 +814,7 @@ fn process_range(range: &str) -> RangeResult<(usize, usize)> {
         Ok((min, max))
     } else {
         min = usize::from_str(&range).unwrap();
-        max = min.clone();
+        max = min;
 
         Ok((min, max))
     }

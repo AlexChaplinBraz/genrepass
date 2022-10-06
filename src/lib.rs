@@ -67,7 +67,7 @@ use deunicode::deunicode;
 use rand::{distributions::Uniform, seq::SliceRandom, thread_rng, Rng};
 use regex::Regex;
 use snafu::Snafu;
-use std::{fs, fs::metadata, path::Path, str::FromStr};
+use std::{fs, fs::metadata, ops::RangeInclusive, path::Path, str::FromStr};
 
 /// Used for configuring the password generator.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -122,7 +122,7 @@ pub struct PassConfig {
     /// for a password of that exact length.
     ///
     /// **Default: 24-30**
-    pub length: String,
+    pub length: RangeInclusive<usize>,
 
     /// ### Amount of numbers to insert
     ///
@@ -131,14 +131,14 @@ pub struct PassConfig {
     /// in the password if 'keep-nums' is activated.
     ///
     /// **Default: 1-2**
-    pub number_amount: String,
+    pub number_amount: RangeInclusive<usize>,
 
     /// ### Amount of special characters to insert
     ///
     /// Can take either a range like 2-4 or an exact amount like 2.
     ///
     /// **Default: 1-2**
-    pub special_chars_amount: String,
+    pub special_chars_amount: RangeInclusive<usize>,
 
     /// ### The special characters to insert
     ///
@@ -156,7 +156,7 @@ pub struct PassConfig {
     /// unless [`force_upper`](PassConfig#structfield.force_upper) is turned on manually.
     ///
     /// **Default: 1-2**
-    pub upper_amount: String,
+    pub upper_amount: RangeInclusive<usize>,
 
     /// ### Amount of lowercase characters
     ///
@@ -167,7 +167,7 @@ pub struct PassConfig {
     /// unless [`force_lower`](PassConfig#structfield.force_lower) is turned on manually.
     ///
     /// **Default: 1-2**
-    pub lower_amount: String,
+    pub lower_amount: RangeInclusive<usize>,
 
     /// ### Choose to keep numbers from the source in the password
     ///
@@ -217,12 +217,12 @@ impl Default for PassConfig {
             randomise: false,
             pass_amount: 1,
             reset_amount: 10,
-            length: String::from("24-30"),
-            number_amount: String::from("1-2"),
-            special_chars_amount: String::from("1-2"),
+            length: 24..=30,
+            number_amount: 1..=2,
+            special_chars_amount: 1..=2,
             special_chars: String::from("^!(-_=)$<[@.#]>%{~,+}&*"),
-            upper_amount: String::from("1-2"),
-            lower_amount: String::from("1-2"),
+            upper_amount: 1..=2,
+            lower_amount: 1..=2,
             keep_numbers: false,
             force_upper: false,
             force_lower: false,
@@ -350,7 +350,8 @@ impl PassConfig {
     /// which specifies the field the error came from.
     /// Read [`ValidationError`] for more information.
     pub fn validate(&self) -> Result<ValidatedConfig> {
-        let (_, _) = match process_range(&self.length) {
+        // TODO: Figure out a different way to validate values.
+        /* let (_, _) = match process_range(&self.length) {
             Ok(a) => a,
             Err(e) => {
                 return Err(ValidationError::InvalidRange {
@@ -398,7 +399,7 @@ impl PassConfig {
                     message: e,
                 })
             }
-        };
+        }; */
 
         if !self.special_chars.is_ascii() {
             return Err(ValidationError::NonAsciiSpecialChars);
@@ -438,12 +439,12 @@ pub struct ValidatedConfig {
     randomise: bool,
     pass_amount: usize,
     reset_amount: usize,
-    length: String,
-    number_amount: String,
-    special_chars_amount: String,
+    length: RangeInclusive<usize>,
+    number_amount: RangeInclusive<usize>,
+    special_chars_amount: RangeInclusive<usize>,
     special_chars: String,
-    upper_amount: String,
-    lower_amount: String,
+    upper_amount: RangeInclusive<usize>,
+    lower_amount: RangeInclusive<usize>,
     keep_numbers: bool,
     force_upper: bool,
     force_lower: bool,
@@ -527,23 +528,17 @@ impl Password {
     fn init(config: &ValidatedConfig) -> Password {
         let mut rng = thread_rng();
 
-        let (mut min_len, mut max_len) = process_range(&config.length).unwrap();
+        let mut min_len = *config.length.start();
+        let mut max_len = *config.length.end();
         if max_len - min_len > 50 {
-            min_len = rng.gen_range(min_len..=(max_len - 50));
+            min_len = rng.gen_range(min_len..=max_len - 50);
             max_len = min_len + 50;
         }
 
-        let (min_num, max_num) = process_range(&config.number_amount).unwrap();
-        let num = rng.gen_range(min_num..=max_num);
-
-        let (min_special, max_special) = process_range(&config.special_chars_amount).unwrap();
-        let special = rng.gen_range(min_special..=max_special);
-
-        let (min_upper, max_upper) = process_range(&config.upper_amount).unwrap();
-        let upper = rng.gen_range(min_upper..=max_upper);
-
-        let (min_lower, max_lower) = process_range(&config.lower_amount).unwrap();
-        let lower = rng.gen_range(min_lower..=max_lower);
+        let num = rng.gen_range(config.number_amount.clone());
+        let special = rng.gen_range(config.special_chars_amount.clone());
+        let upper = rng.gen_range(config.upper_amount.clone());
+        let lower = rng.gen_range(config.lower_amount.clone());
 
         let mut total_inserts = num + special;
         if total_inserts > max_len {
@@ -780,6 +775,7 @@ fn decapitalise(s: &mut str, i: usize) {
     }
 }
 
+/// TODO: Make this a public helper after the move to [`core::ops::RangeInclusive`].
 fn process_range(range: &str) -> RangeResult<(usize, usize)> {
     let min;
     let max;

@@ -775,8 +775,12 @@ fn decapitalise(s: &mut str, i: usize) {
     }
 }
 
-/// TODO: Make this a public helper after the move to [`core::ops::RangeInclusive`].
-fn process_range(range: &str) -> RangeResult<(usize, usize)> {
+/// Get a positive inclusive range from a string in the format of "20-50".
+///
+/// Trims off any extra dashes at the start and end and between them.
+///
+/// TODO: Adjust it accordingly when making the example GUI.
+pub fn range_inc_from_str(range: &str) -> RangeResult<RangeInclusive<usize>> {
     let min;
     let max;
 
@@ -807,11 +811,11 @@ fn process_range(range: &str) -> RangeResult<(usize, usize)> {
             });
         }
 
-        Ok((min, max))
+        Ok(RangeInclusive::new(min, max))
     } else {
         min = usize::from_str(&range).unwrap();
         max = min;
 
-        Ok((min, max))
+        Ok(RangeInclusive::new(min, max))
     }
 }

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `range_inc_from_str()` for getting a `RangeInclusive` from a `String`.
+
 ### Changed
 
 - To using `RangeInclusive` instead of processed `String`s.

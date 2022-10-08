@@ -349,7 +349,7 @@ impl PassConfig {
     /// Each error has a message, especially [`InvalidRange`](ValidationError#variant.InvalidRange),
     /// which specifies the field the error came from.
     /// Read [`ValidationError`] for more information.
-    pub fn validate(&self) -> Result<ValidatedConfig> {
+    pub fn validate(&self) -> Result<ValidatedConfig, ValidationError> {
         // TODO: Figure out a different way to validate values.
         /* let (_, _) = match process_range(&self.length) {
             Ok(a) => a,
@@ -491,9 +491,6 @@ pub enum ValidationError {
 pub struct RangeError {
     message: String,
 }
-
-type Result<T, E = ValidationError> = std::result::Result<T, E>;
-type RangeResult<T, E = RangeError> = std::result::Result<T, E>;
 
 struct Password {
     password: String,
@@ -780,7 +777,7 @@ fn decapitalise(s: &mut str, i: usize) {
 /// Trims off any extra dashes at the start and end and between them.
 ///
 /// TODO: Adjust it accordingly when making the example GUI.
-pub fn range_inc_from_str(range: &str) -> RangeResult<RangeInclusive<usize>> {
+pub fn range_inc_from_str(range: &str) -> Result<RangeInclusive<usize>, RangeError> {
     let min;
     let max;
 

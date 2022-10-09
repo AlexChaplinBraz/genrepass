@@ -489,7 +489,7 @@ pub enum ValidationError {
 /// Holds the message for the type of error that occurred while parsing a range.
 #[derive(Debug, Snafu)]
 pub struct RangeError {
-    message: String,
+    message: &'static str,
 }
 
 struct Password {
@@ -787,13 +787,13 @@ pub fn range_inc_from_str(range: &str) -> Result<RangeInclusive<usize>, RangeErr
 
     if range.matches('-').count() > 1 {
         return Err(RangeError {
-            message: "more than two sides".to_string(),
+            message: "more than two sides",
         });
     }
 
     if !range.chars().all(|c| c.is_numeric() || c == '-') {
         return Err(RangeError {
-            message: "contains something other than integers and a - (dash)".to_string(),
+            message: "contains something other than integers and a - (dash)",
         });
     }
 
@@ -804,7 +804,7 @@ pub fn range_inc_from_str(range: &str) -> Result<RangeInclusive<usize>, RangeErr
 
         if max < min {
             return Err(RangeError {
-                message: "right side of range can't be smaller than left side".to_string(),
+                message: "right side of range can't be smaller than left side",
             });
         }
 

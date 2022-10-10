@@ -13,9 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Changed to validating values when added, removing `ValidatedConfig`.
 - To using `RangeInclusive` instead of processed `String`s.
-- `Password::new()` renamed to `Password::generate()`.
-- `ValidatedConfig::generate()` renamed to `ValidatedConfig::generate_passwords()`.
 
 ## [1.1.4] - 2022-10-01
 <!--BEGIN=1.1.4-->

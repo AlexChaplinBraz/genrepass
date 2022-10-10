@@ -32,7 +32,7 @@ fn main() {
 // Create a function for easier error management.
 fn run() -> Result<(), Box<dyn Error>> {
     // Create a configuration with default values.
-    let mut config = PassConfig::new();
+    let mut config = PasswordSettings::new();
 
     // Load in and parse the text to use for the password generation.
     config.get_words_from_path("/home/alex/Documents/notes")?;
@@ -71,7 +71,7 @@ use std::{fs, fs::metadata, ops::RangeInclusive, path::Path, str::FromStr};
 
 /// Used for configuring the password generator.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PassConfig {
+pub struct PasswordSettings {
     /// ### Uppercase the first character of every word
     ///
     /// Makes the password much easier to read, but also slightly less secure
@@ -145,15 +145,15 @@ pub struct PassConfig {
     /// Non-ASCII characters are not supported and will error.
     ///
     /// **Default: ^!(-_=)$<\[@.#\]>%{~,+}&\***
-    pub special_chars: String,
+    special_chars: String,
 
     /// ### Amount of uppercase characters
     ///
     /// Can take either a range like 2-4 or an exact amount like 2. If there are no
-    /// uppercase characters, the [`force_upper`](PassConfig#structfield.force_upper)
+    /// uppercase characters, the [`force_upper`](PasswordSettings#structfield.force_upper)
     /// flag is turned on automatically to capitalise up to the specified amount of alphabetic characters.
     /// But if there's at least one uppercase character there won't be any capitalisation
-    /// unless [`force_upper`](PassConfig#structfield.force_upper) is turned on manually.
+    /// unless [`force_upper`](PasswordSettings#structfield.force_upper) is turned on manually.
     ///
     /// **Default: 1-2**
     pub upper_amount: RangeInclusive<usize>,
@@ -161,10 +161,10 @@ pub struct PassConfig {
     /// ### Amount of lowercase characters
     ///
     /// Can take either a range like 2-4 or an exact amount like 2. If there are no
-    /// lowercase characters, the [`force_lower`](PassConfig#structfield.force_lower)
+    /// lowercase characters, the [`force_lower`](PasswordSettings#structfield.force_lower)
     /// flag is turned on automatically to decapitalise up to the specified amount of alphabetic characters.
     /// But if there's at least one lowercase character there won't be any decapitalisation
-    /// unless [`force_lower`](PassConfig#structfield.force_lower) is turned on manually.
+    /// unless [`force_lower`](PasswordSettings#structfield.force_lower) is turned on manually.
     ///
     /// **Default: 1-2**
     pub lower_amount: RangeInclusive<usize>,
@@ -179,28 +179,28 @@ pub struct PassConfig {
 
     /// ### Force the specified amount of uppercase characters
     ///
-    /// Gets ignored if [`dont_upper`](PassConfig#structfield.dont_upper) is also set.
+    /// Gets ignored if [`dont_upper`](PasswordSettings#structfield.dont_upper) is also set.
     ///
     /// **Default: false**
     pub force_upper: bool,
 
     /// ### Force the specified amount of lowercase characters
     ///
-    /// Gets ignored if [`dont_lower`](PassConfig#structfield.dont_lower) is also set.
+    /// Gets ignored if [`dont_lower`](PasswordSettings#structfield.dont_lower) is also set.
     ///
     /// **Default: false**
     pub force_lower: bool,
 
     /// ### Don't uppercase at all to keep original casing
     ///
-    /// Ignores [`force_upper`](PassConfig#structfield.force_upper), both manual and automatic.
+    /// Ignores [`force_upper`](PasswordSettings#structfield.force_upper), both manual and automatic.
     ///
     /// **Default: false**
     pub dont_upper: bool,
 
     /// ### Don't lowercase at all to keep original casing
     ///
-    /// Ignores [`force_lower`](PassConfig#structfield.force_lower), both manual and automatic.
+    /// Ignores [`force_lower`](PasswordSettings#structfield.force_lower), both manual and automatic.
     ///
     /// **Default: false**
     pub dont_lower: bool,
@@ -208,7 +208,7 @@ pub struct PassConfig {
     words: Vec<String>,
 }
 
-impl Default for PassConfig {
+impl Default for PasswordSettings {
     /// A set of recommended settings for generating a password.
     fn default() -> Self {
         Self {
@@ -233,10 +233,28 @@ impl Default for PassConfig {
     }
 }
 
-impl PassConfig {
+impl PasswordSettings {
     /// Create a new configuration with default values.
     pub fn new() -> Self {
-        PassConfig::default()
+        PasswordSettings::default()
+    }
+
+    /// ### The special characters to insert
+    ///
+    /// Non-ASCII characters are not supported and will error.
+    ///
+    /// **Default: ^!(-_=)$<\[@.#\]>%{~,+}&\***
+    pub fn set_special_chars(&mut self, chars: &str) -> Result<(), ValidationError> {
+        if !chars.is_ascii() {
+            Err(ValidationError::NonAsciiSpecialChars)
+        } else {
+            self.special_chars = chars.to_owned();
+            Ok(())
+        }
+    }
+
+    pub fn get_special_chars(&self) -> &str {
+        &self.special_chars
     }
 
     /// Extract words from file or directory with text files.
@@ -342,6 +360,21 @@ impl PassConfig {
         &self.words
     }
 
+    /// Generate a vector of passwords.
+    pub fn generate(&self) -> Result<Vec<String>, ValidationError> {
+        if self.words.is_empty() || self.words.len() == 1 {
+            return Err(ValidationError::NoWords);
+        }
+
+        let mut passwords = Vec::new();
+
+        for _ in 0..self.pass_amount {
+            passwords.push(Password::generate(self));
+        }
+
+        Ok(passwords)
+    }
+    /*
     /// Check configuration for errors and get a validated configuration.
     ///
     /// # Errors:
@@ -401,14 +434,6 @@ impl PassConfig {
             }
         }; */
 
-        if !self.special_chars.is_ascii() {
-            return Err(ValidationError::NonAsciiSpecialChars);
-        }
-
-        if self.words.is_empty() || self.words.len() == 1 {
-            return Err(ValidationError::NoWords);
-        }
-
         Ok(ValidatedConfig {
             capitalise: self.capitalise,
             replace: self.replace,
@@ -428,42 +453,7 @@ impl PassConfig {
             dont_lower: self.dont_lower,
             words: self.words.clone(),
         })
-    }
-}
-
-/// Immutable configuration given after validation.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ValidatedConfig {
-    capitalise: bool,
-    replace: bool,
-    randomise: bool,
-    pass_amount: usize,
-    reset_amount: usize,
-    length: RangeInclusive<usize>,
-    number_amount: RangeInclusive<usize>,
-    special_chars_amount: RangeInclusive<usize>,
-    special_chars: String,
-    upper_amount: RangeInclusive<usize>,
-    lower_amount: RangeInclusive<usize>,
-    keep_numbers: bool,
-    force_upper: bool,
-    force_lower: bool,
-    dont_upper: bool,
-    dont_lower: bool,
-    words: Vec<String>,
-}
-
-impl ValidatedConfig {
-    /// Generate a vector of passwords.
-    pub fn generate_passwords(&self) -> Vec<String> {
-        let mut passwords = Vec::new();
-
-        for _ in 0..self.pass_amount {
-            passwords.push(Password::generate(self));
-        }
-
-        passwords
-    }
+    } */
 }
 
 /// The possible errors when checking the configuration.
@@ -481,7 +471,7 @@ pub enum ValidationError {
     #[snafu(display("No words for password generation"))]
     NoWords,
 
-    /// For when non-ASCII characters are found in [`special_chars`](PassConfig#structfield.special_chars).
+    /// For when non-ASCII characters are found in [`special_chars`](PasswordSettings#structfield.special_chars).
     #[snafu(display("Non-ASCII special characters aren't allowed for insertables"))]
     NonAsciiSpecialChars,
 }
@@ -506,7 +496,7 @@ struct Password {
 }
 
 impl Password {
-    fn generate(config: &ValidatedConfig) -> String {
+    fn generate(config: &PasswordSettings) -> String {
         let mut pass = Password::init(config);
 
         pass.get_pass_string(config);
@@ -522,7 +512,7 @@ impl Password {
         pass.password
     }
 
-    fn init(config: &ValidatedConfig) -> Password {
+    fn init(config: &PasswordSettings) -> Password {
         let mut rng = thread_rng();
 
         let mut min_len = *config.length.start();
@@ -587,7 +577,7 @@ impl Password {
         }
     }
 
-    fn get_pass_string(&mut self, config: &ValidatedConfig) {
+    fn get_pass_string(&mut self, config: &PasswordSettings) {
         let mut rng = thread_rng();
         let start_index = rng.gen_range(0..config.words.len());
 
@@ -679,7 +669,7 @@ impl Password {
         }
     }
 
-    fn ensure_case(&mut self, config: &ValidatedConfig) {
+    fn ensure_case(&mut self, config: &PasswordSettings) {
         let mut rng = thread_rng();
 
         let u_amount = self

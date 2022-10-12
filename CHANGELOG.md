@@ -13,7 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Changed to validating values when added, removing `ValidatedConfig`.
+- To validating values when added, removing `ValidatedConfig`.
+- To using dedicated errors.
 - To using `RangeInclusive` instead of processed `String`s.
 
 ## [1.1.4] - 2022-10-01

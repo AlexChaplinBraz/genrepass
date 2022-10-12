@@ -180,13 +180,11 @@ impl PasswordSettings {
     /// Non-ASCII characters are not supported and will error.
     ///
     /// **Default: ^!(-_=)$<\[@.#\]>%{~,+}&\***
-    pub fn set_special_chars(&mut self, chars: &str) -> Result<(), ValidationError> {
-        if !chars.is_ascii() {
-            Err(ValidationError::NonAsciiSpecialChars)
-        } else {
-            self.special_chars = chars.to_owned();
-            Ok(())
-        }
+    pub fn set_special_chars(&mut self, chars: &str) -> Result<(), NonAsciiSpecialCharsError> {
+        ensure!(chars.is_ascii(), NonAsciiSpecialCharsSnafu);
+
+        self.special_chars = chars.to_owned();
+        Ok(())
     }
 
     pub fn get_special_chars(&self) -> &str {
@@ -313,13 +311,10 @@ impl PasswordSettings {
     }
 }
 
-/// The possible errors when checking the configuration.
+/// When non-ASCII characters are found during [`set_special_chars`](PasswordSettings#method.set_special_chars).
 #[derive(Debug, Snafu)]
-pub enum ValidationError {
-    /// For when non-ASCII characters are found in [`special_chars`](PasswordSettings#structfield.special_chars).
-    #[snafu(display("Non-ASCII special characters aren't allowed for insertables"))]
-    NonAsciiSpecialChars,
-}
+#[snafu(display("non-ASCII special characters aren't allowed for insertables"))]
+pub struct NonAsciiSpecialCharsError;
 
 /// When the [`PasswordSettings`] holds either one or zero words.
 ///

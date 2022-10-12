@@ -1,5 +1,5 @@
 use regex::Regex;
-use snafu::Snafu;
+use snafu::{ensure, Snafu};
 use std::{fs, ops::RangeInclusive, path::Path, str::FromStr};
 
 /// Get a positive inclusive range (..=) from a string in the format of "20-50" or "24".
@@ -16,22 +16,19 @@ pub fn range_inc_from_str(range: &str) -> Result<RangeInclusive<usize>, ParseRan
     let re = Regex::new(r"-+").unwrap();
     let range = re.replace_all(range, "-");
 
-    if range.matches('-').count() > 1 {
-        Err(ParseRangeError::MoreThanTwoSides)?
-    }
+    ensure!(range.matches('-').count() <= 1, MoreThanTwoSidesSnafu);
 
-    if !range.chars().all(|c| c.is_numeric() || c == '-') {
-        Err(ParseRangeError::ContainsNonintegerOrDash)?
-    }
+    ensure!(
+        range.chars().all(|c| c.is_numeric() || c == '-'),
+        ContainsNonintegerOrDashSnafu
+    );
 
     if range.contains('-') {
         let r: Vec<&str> = range.split('-').collect();
         min = usize::from_str(r[0]).unwrap();
         max = usize::from_str(r[1]).unwrap();
 
-        if max < min {
-            Err(ParseRangeError::RightSideIsSmaller)?
-        }
+        ensure!(min <= max, RightSideIsSmallerSnafu);
 
         Ok(RangeInclusive::new(min, max))
     } else {

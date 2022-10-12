@@ -64,5 +64,5 @@ mod password;
 mod settings;
 pub use crate::{
     helpers::{range_inc_from_str, ParseRangeError},
-    settings::PasswordSettings,
+    settings::{NotEnoughWordsError, PasswordSettings},
 };

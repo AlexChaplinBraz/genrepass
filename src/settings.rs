@@ -2,7 +2,7 @@ use crate::{helpers::get_text_from_dir, password::Password};
 use deunicode::deunicode;
 use rand::{seq::SliceRandom, thread_rng};
 use regex::Regex;
-use snafu::Snafu;
+use snafu::{ensure, Snafu};
 use std::{fs, fs::metadata, ops::RangeInclusive, path::Path};
 
 /// Used for configuring the password generator.
@@ -297,10 +297,11 @@ impl PasswordSettings {
     }
 
     /// Generate a vector of passwords.
-    pub fn generate(&self) -> Result<Vec<String>, ValidationError> {
-        if self.words.is_empty() || self.words.len() == 1 {
-            return Err(ValidationError::NoWords);
-        }
+    pub fn generate(&self) -> Result<Vec<String>, NotEnoughWordsError> {
+        ensure!(
+            !self.words.is_empty() && self.words.len() > 1,
+            NotEnoughWordsSnafu
+        );
 
         let mut passwords = Vec::new();
 
@@ -315,12 +316,14 @@ impl PasswordSettings {
 /// The possible errors when checking the configuration.
 #[derive(Debug, Snafu)]
 pub enum ValidationError {
-    /// For when the Config holds either one or zero words.
-    /// The reason one word isn't allowed is due to the use of [`std::iter::Peekable`].
-    #[snafu(display("No words for password generation"))]
-    NoWords,
-
     /// For when non-ASCII characters are found in [`special_chars`](PasswordSettings#structfield.special_chars).
     #[snafu(display("Non-ASCII special characters aren't allowed for insertables"))]
     NonAsciiSpecialChars,
 }
+
+/// When the [`PasswordSettings`] holds either one or zero words.
+///
+/// The reason one word isn't allowed is due to the use of [`std::iter::Peekable`].
+#[derive(Debug, Snafu)]
+#[snafu(display("not enough words for password generation"))]
+pub struct NotEnoughWordsError;

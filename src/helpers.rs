@@ -20,7 +20,7 @@ pub fn range_inc_from_str(range: &str) -> Result<RangeInclusive<usize>, ParseRan
 
     ensure!(
         range.chars().all(|c| c.is_numeric() || c == '-'),
-        ContainsNonintegerOrDashSnafu
+        ContainsIllegalCharSnafu
     );
 
     if range.contains('-') {
@@ -46,8 +46,8 @@ pub enum ParseRangeError {
     #[snafu(display("more than two sides"))]
     MoreThanTwoSides,
     /// When the string contains something other than integers and dashes like "25.5-40".
-    #[snafu(display("contains something other than integers and a - (dash)"))]
-    ContainsNonintegerOrDash,
+    #[snafu(display("contains something other than integers and dashes (-)"))]
+    ContainsIllegalChar,
     /// When the right side of the range is smaller than the left side like "35-25".
     #[snafu(display("right side of range can't be smaller than left side"))]
     RightSideIsSmaller,

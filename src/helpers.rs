@@ -1,13 +1,14 @@
-use crate::settings::RangeError;
 use regex::Regex;
+use snafu::Snafu;
 use std::{fs, ops::RangeInclusive, path::Path, str::FromStr};
 
-/// Get a positive inclusive range from a string in the format of "20-50".
+/// Get a positive inclusive range (..=) from a string in the format of "20-50" or "24".
 ///
-/// Trims off any extra dashes at the start and end and between them.
+/// This function does some clean-up beforehand to remove trailing and repeating dashes.
+/// So `---20-----30--` becomes `20-30`, and gives no error.
 ///
 /// TODO: Adjust it accordingly when making the example GUI.
-pub fn range_inc_from_str(range: &str) -> Result<RangeInclusive<usize>, RangeError> {
+pub fn range_inc_from_str(range: &str) -> Result<RangeInclusive<usize>, ParseRangeError> {
     let min;
     let max;
 
@@ -16,15 +17,11 @@ pub fn range_inc_from_str(range: &str) -> Result<RangeInclusive<usize>, RangeErr
     let range = re.replace_all(range, "-");
 
     if range.matches('-').count() > 1 {
-        return Err(RangeError {
-            message: "more than two sides",
-        });
+        Err(ParseRangeError::MoreThanTwoSides)?
     }
 
     if !range.chars().all(|c| c.is_numeric() || c == '-') {
-        return Err(RangeError {
-            message: "contains something other than integers and a - (dash)",
-        });
+        Err(ParseRangeError::ContainsNonintegerOrDash)?
     }
 
     if range.contains('-') {
@@ -33,9 +30,7 @@ pub fn range_inc_from_str(range: &str) -> Result<RangeInclusive<usize>, RangeErr
         max = usize::from_str(r[1]).unwrap();
 
         if max < min {
-            return Err(RangeError {
-                message: "right side of range can't be smaller than left side",
-            });
+            Err(ParseRangeError::RightSideIsSmaller)?
         }
 
         Ok(RangeInclusive::new(min, max))
@@ -45,6 +40,20 @@ pub fn range_inc_from_str(range: &str) -> Result<RangeInclusive<usize>, RangeErr
 
         Ok(RangeInclusive::new(min, max))
     }
+}
+
+/// The errors that parsing a range from a string can return.
+#[derive(Debug, Snafu)]
+pub enum ParseRangeError {
+    /// When the string contains more than two numbers separated by a dash like "20-30-40".
+    #[snafu(display("more than two sides"))]
+    MoreThanTwoSides,
+    /// When the string contains something other than integers and dashes like "25.5-40".
+    #[snafu(display("contains something other than integers and a - (dash)"))]
+    ContainsNonintegerOrDash,
+    /// When the right side of the range is smaller than the left side like "35-25".
+    #[snafu(display("right side of range can't be smaller than left side"))]
+    RightSideIsSmaller,
 }
 
 pub(crate) fn get_text_from_dir(

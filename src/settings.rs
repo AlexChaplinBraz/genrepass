@@ -315,13 +315,6 @@ impl PasswordSettings {
 /// The possible errors when checking the configuration.
 #[derive(Debug, Snafu)]
 pub enum ValidationError {
-    /// For when the range processor doesn't receive either a "20-30" or a "25" style string.
-    ///
-    /// The range processor does some clean-up beforehand to remove trailing and repeating dashes.
-    /// So `---20-----30--` becomes `20-30`, and gives no error or custom message in this case.
-    #[snafu(display("Invalid {} range: {}", field,  message.message))]
-    InvalidRange { field: String, message: RangeError },
-
     /// For when the Config holds either one or zero words.
     /// The reason one word isn't allowed is due to the use of [`std::iter::Peekable`].
     #[snafu(display("No words for password generation"))]
@@ -330,10 +323,4 @@ pub enum ValidationError {
     /// For when non-ASCII characters are found in [`special_chars`](PasswordSettings#structfield.special_chars).
     #[snafu(display("Non-ASCII special characters aren't allowed for insertables"))]
     NonAsciiSpecialChars,
-}
-
-/// Holds the message for the type of error that occurred while parsing a range.
-#[derive(Debug, Snafu)]
-pub struct RangeError {
-    pub(crate) message: &'static str,
 }

@@ -62,5 +62,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 mod helpers;
 mod password;
 mod settings;
-pub use helpers::range_inc_from_str;
-pub use settings::{PasswordSettings, RangeError};
+pub use crate::{
+    helpers::{range_inc_from_str, ParseRangeError},
+    settings::PasswordSettings,
+};

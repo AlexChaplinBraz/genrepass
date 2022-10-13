@@ -1,0 +1,13 @@
+[package]
+name = "egui_app"
+version = "0.1.0"
+authors = ["Alexander Chaplin Braz <contact@alexchaplinbraz.com>"]
+license = "MIT"
+edition = "2021"
+publish = false
+
+[dependencies]
+copypasta-ext = "0.3"
+eframe = "0.19"
+genrepass = { path = "../../" }
+rfd = "0.10"

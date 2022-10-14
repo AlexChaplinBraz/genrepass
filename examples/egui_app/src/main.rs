@@ -1,6 +1,6 @@
 use copypasta_ext::{prelude::ClipboardProvider, x11_bin::ClipboardContext};
 use eframe::{
-    egui::{Button, CentralPanel, Layout, ScrollArea, TopBottomPanel},
+    egui::{Button, CentralPanel, DragValue, Layout, ScrollArea, TopBottomPanel},
     emath::Align,
     run_native, App, NativeOptions,
 };
@@ -39,6 +39,9 @@ impl App for Gui {
     fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
         CentralPanel::default().show(ctx, |ui| {
             ui.heading("Readable Password Generator");
+            ui.separator();
+            ui.label("Amount of passwords to generate");
+            ui.add(DragValue::new(&mut self.settings.pass_amount).speed(1));
             ui.separator();
             ui.label("Words");
 

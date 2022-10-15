@@ -47,6 +47,34 @@ impl App for Gui {
             ui.add(DragValue::new(&mut self.settings.pass_amount).speed(1));
             ui.separator();
 
+            ui.checkbox(&mut self.settings.capitalise, "Capitalise each word");
+            ui.checkbox(
+                &mut self.settings.replace,
+                "Replace characters instead of inserting them",
+            );
+            ui.checkbox(&mut self.settings.randomise, "Randomise the words");
+            ui.checkbox(
+                &mut self.settings.keep_numbers,
+                "Keep the numbers from the sources",
+            );
+            ui.checkbox(
+                &mut self.settings.force_upper,
+                "Force uppercasing if there are not enough uppercase letters",
+            );
+            ui.checkbox(
+                &mut self.settings.force_upper,
+                "Force lowercasing if there are not enough lowercase letters",
+            );
+            ui.checkbox(
+                &mut self.settings.dont_upper,
+                "Don't uppercase at all to keep original casing",
+            );
+            ui.checkbox(
+                &mut self.settings.dont_lower,
+                "Don't lowercase at all to keep original casing",
+            );
+            ui.separator();
+
             ui.label("Words");
             ui.horizontal(|ui| {
                 ui.label("Input manually:");

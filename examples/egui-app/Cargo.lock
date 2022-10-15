@@ -506,6 +506,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui-app"
+version = "0.1.0"
+dependencies = [
+ "copypasta-ext",
+ "eframe",
+ "genrepass",
+ "rfd",
+]
+
+[[package]]
 name = "egui-winit"
 version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -518,16 +528,6 @@ dependencies = [
  "tracing",
  "webbrowser",
  "winit",
-]
-
-[[package]]
-name = "egui_app"
-version = "0.1.0"
-dependencies = [
- "copypasta-ext",
- "eframe",
- "genrepass",
- "rfd",
 ]
 
 [[package]]

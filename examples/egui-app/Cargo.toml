@@ -1,5 +1,5 @@
 [package]
-name = "egui_app"
+name = "egui-app"
 version = "0.1.0"
 authors = ["Alexander Chaplin Braz <contact@alexchaplinbraz.com>"]
 license = "MIT"

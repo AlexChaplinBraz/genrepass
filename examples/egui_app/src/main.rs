@@ -1,6 +1,6 @@
 use copypasta_ext::{prelude::ClipboardProvider, x11_bin::ClipboardContext};
 use eframe::{
-    egui::{Button, CentralPanel, DragValue, Layout, ScrollArea, TopBottomPanel},
+    egui::{Button, CentralPanel, DragValue, Key, Layout, ScrollArea, TextEdit, TopBottomPanel},
     emath::Align,
     run_native, App, NativeOptions,
 };
@@ -23,6 +23,7 @@ struct Gui {
     settings: PasswordSettings,
     passwords: Vec<String>,
     clipboard: ClipboardContext,
+    manual_input: String,
 }
 
 impl Gui {
@@ -31,6 +32,7 @@ impl Gui {
             settings: Default::default(),
             passwords: Default::default(),
             clipboard,
+            manual_input: Default::default(),
         }
     }
 }
@@ -40,10 +42,24 @@ impl App for Gui {
         CentralPanel::default().show(ctx, |ui| {
             ui.heading("Readable Password Generator");
             ui.separator();
+
             ui.label("Amount of passwords to generate");
             ui.add(DragValue::new(&mut self.settings.pass_amount).speed(1));
             ui.separator();
+
             ui.label("Words");
+            ui.horizontal(|ui| {
+                ui.label("Input manually:");
+                let text_edit_response = ui.add(TextEdit::singleline(&mut self.manual_input));
+                let button_response = ui.button("Add words");
+
+                if button_response.clicked()
+                    || text_edit_response.lost_focus() && ui.input().key_pressed(Key::Enter)
+                {
+                    self.settings.get_words_from_str(&self.manual_input);
+                    self.manual_input.clear();
+                }
+            });
 
             ui.horizontal(|ui| {
                 if ui.button("Load words from files").clicked() {

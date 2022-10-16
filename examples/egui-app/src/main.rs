@@ -101,15 +101,20 @@ impl App for Gui {
             ui.label("Words");
             ui.horizontal(|ui| {
                 ui.label("Input manually:");
-                let text_edit_response = ui.add(TextEdit::singleline(&mut self.manual_input));
-                let button_response = ui.button("Add words");
+                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                    let button_response = ui.button("Add words");
+                    let text_edit_response = ui.add_sized(
+                        ui.available_size(),
+                        TextEdit::singleline(&mut self.manual_input),
+                    );
 
-                if button_response.clicked()
-                    || text_edit_response.lost_focus() && ui.input().key_pressed(Key::Enter)
-                {
-                    self.settings.get_words_from_str(&self.manual_input);
-                    self.manual_input.clear();
-                }
+                    if button_response.clicked()
+                        || text_edit_response.lost_focus() && ui.input().key_pressed(Key::Enter)
+                    {
+                        self.settings.get_words_from_str(&self.manual_input);
+                        self.manual_input.clear();
+                    }
+                });
             });
 
             ui.horizontal(|ui| {

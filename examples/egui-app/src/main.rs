@@ -1,6 +1,9 @@
 use copypasta_ext::{prelude::ClipboardProvider, x11_bin::ClipboardContext};
 use eframe::{
-    egui::{Button, CentralPanel, DragValue, Key, Layout, ScrollArea, TextEdit, TopBottomPanel},
+    egui::{
+        Button, CentralPanel, Checkbox, DragValue, Key, Layout, ScrollArea, TextEdit,
+        TopBottomPanel,
+    },
     emath::Align,
     run_native, App, NativeOptions,
 };
@@ -57,18 +60,38 @@ impl App for Gui {
                 &mut self.settings.keep_numbers,
                 "Keep the numbers from the sources",
             );
-            ui.checkbox(
-                &mut self.settings.force_upper,
-                "Force uppercasing if there are not enough uppercase letters",
-            );
-            ui.checkbox(
-                &mut self.settings.force_lower,
-                "Force lowercasing if there are not enough lowercase letters",
-            );
+            if self.settings.dont_upper {
+                ui.add_enabled(
+                    false,
+                    Checkbox::new(
+                        &mut self.settings.force_upper,
+                        "Force uppercasing if there are not enough uppercase letters (disabled)",
+                    ),
+                );
+            } else {
+                ui.checkbox(
+                    &mut self.settings.force_upper,
+                    "Force uppercasing if there are not enough uppercase letters",
+                );
+            }
             ui.checkbox(
                 &mut self.settings.dont_upper,
                 "Don't uppercase at all to keep original casing",
             );
+            if self.settings.dont_lower {
+                ui.add_enabled(
+                    false,
+                    Checkbox::new(
+                        &mut self.settings.force_lower,
+                        "Force lowercasing if there are not enough lowercase letters (disabled)",
+                    ),
+                );
+            } else {
+                ui.checkbox(
+                    &mut self.settings.force_lower,
+                    "Force lowercasing if there are not enough lowercase letters",
+                );
+            }
             ui.checkbox(
                 &mut self.settings.dont_lower,
                 "Don't lowercase at all to keep original casing",

@@ -62,7 +62,7 @@ impl App for Gui {
                 "Force uppercasing if there are not enough uppercase letters",
             );
             ui.checkbox(
-                &mut self.settings.force_upper,
+                &mut self.settings.force_lower,
                 "Force lowercasing if there are not enough lowercase letters",
             );
             ui.checkbox(

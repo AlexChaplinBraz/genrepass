@@ -47,7 +47,11 @@ impl App for Gui {
             ui.separator();
 
             ui.label("Amount of passwords to generate");
-            ui.add(DragValue::new(&mut self.settings.pass_amount).speed(1));
+            ui.add(
+                DragValue::new(&mut self.settings.pass_amount)
+                    .speed(1)
+                    .clamp_range(1..=1000),
+            );
             ui.separator();
 
             ui.checkbox(&mut self.settings.capitalise, "Capitalise each word");

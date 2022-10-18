@@ -43,7 +43,9 @@ impl Gui {
 impl App for Gui {
     fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
         CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Readable Password Generator");
+            ui.with_layout(Layout::top_down(Align::Center), |ui| {
+                ui.heading("Readable Password Generator");
+            });
             ui.separator();
 
             ui.label("Amount of passwords to generate");

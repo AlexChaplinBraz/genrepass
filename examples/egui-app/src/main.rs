@@ -48,13 +48,14 @@ impl App for Gui {
             });
             ui.separator();
 
-            ui.label("Amount of passwords to generate");
-            ui.add(
-                DragValue::new(&mut self.settings.pass_amount)
-                    .speed(1)
-                    .clamp_range(1..=1000),
-            );
-            ui.separator();
+            ui.horizontal(|ui| {
+                ui.add(
+                    DragValue::new(&mut self.settings.pass_amount)
+                        .speed(1)
+                        .clamp_range(1..=1000),
+                );
+                ui.label("Amount of passwords to generate");
+            });
 
             ui.checkbox(&mut self.settings.capitalise, "Capitalise each word");
             ui.checkbox(
@@ -104,9 +105,8 @@ impl App for Gui {
             );
             ui.separator();
 
-            ui.label("Words");
             ui.horizontal(|ui| {
-                ui.label("Input manually:");
+                ui.label("Input words manually:");
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                     let button_response = ui.button("Add words");
                     let text_edit_response = ui.add_sized(

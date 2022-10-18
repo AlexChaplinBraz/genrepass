@@ -42,6 +42,31 @@ impl Gui {
 
 impl App for Gui {
     fn update(&mut self, ctx: &eframe::egui::Context, _frame: &mut eframe::Frame) {
+        TopBottomPanel::bottom("passwords")
+            .min_height(100.0)
+            .show(ctx, |ui| {
+                ui.with_layout(Layout::top_down_justified(Align::Center), |ui| {
+                    if self.settings.get_words().len() <= 1 {
+                        ui.add_enabled(false, Button::new("Generate"))
+                            .on_disabled_hover_text("Must have more than one word for generation");
+                    } else if ui.button("Generate").clicked() {
+                        self.passwords = self.settings.generate().unwrap();
+                    }
+                    if !self.passwords.is_empty() {
+                        ScrollArea::vertical().show(ui, |ui| {
+                            ui.horizontal_wrapped(|ui| {
+                                for password in &self.passwords {
+                                    if ui.button(password).on_hover_text("Click to copy").clicked()
+                                    {
+                                        self.clipboard.set_contents(password.to_owned()).unwrap();
+                                    }
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+
         CentralPanel::default().show(ctx, |ui| {
             ui.with_layout(Layout::top_down(Align::Center), |ui| {
                 ui.heading("Readable Password Generator");
@@ -150,29 +175,5 @@ impl App for Gui {
                 });
             });
         });
-        TopBottomPanel::bottom("passwords")
-            .min_height(100.0)
-            .show(ctx, |ui| {
-                ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                    if self.settings.get_words().len() <= 1 {
-                        ui.add_enabled(false, Button::new("Generate"))
-                            .on_disabled_hover_text("Must have more than one word for generation");
-                    } else if ui.button("Generate").clicked() {
-                        self.passwords = self.settings.generate().unwrap();
-                    }
-                    if !self.passwords.is_empty() {
-                        ScrollArea::vertical().show(ui, |ui| {
-                            ui.horizontal_wrapped(|ui| {
-                                for password in &self.passwords {
-                                    if ui.button(password).on_hover_text("Click to copy").clicked()
-                                    {
-                                        self.clipboard.set_contents(password.to_owned()).unwrap();
-                                    }
-                                }
-                            });
-                        });
-                    }
-                });
-            });
     }
 }

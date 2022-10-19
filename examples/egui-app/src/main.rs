@@ -1,8 +1,8 @@
 use copypasta_ext::{prelude::ClipboardProvider, x11_bin::ClipboardContext};
 use eframe::{
     egui::{
-        Button, CentralPanel, Checkbox, DragValue, Key, Layout, ScrollArea, TextEdit,
-        TopBottomPanel,
+        Button, CentralPanel, Checkbox, Color32, DragValue, Key, Layout, ScrollArea, TextEdit,
+        TopBottomPanel, Ui,
     },
     emath::Align,
     run_native, App, NativeOptions,
@@ -26,7 +26,9 @@ struct Gui {
     settings: PasswordSettings,
     passwords: Vec<String>,
     clipboard: ClipboardContext,
-    manual_input: String,
+    words_manual_input: String,
+    special_chars_manual_input: String,
+    special_chars_good: bool,
 }
 
 impl Gui {
@@ -35,7 +37,9 @@ impl Gui {
             settings: Default::default(),
             passwords: Default::default(),
             clipboard,
-            manual_input: Default::default(),
+            words_manual_input: Default::default(),
+            special_chars_manual_input: Default::default(),
+            special_chars_good: true,
         }
     }
 }
@@ -131,19 +135,53 @@ impl App for Gui {
             ui.separator();
 
             ui.horizontal(|ui| {
-                ui.label("Input words manually:");
+                ui.label("Special characters:");
+                selectable_text(ui, self.settings.get_special_chars());
+            });
+            ui.horizontal(|ui| {
+                ui.label("Input special characters:");
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                    let button_response = ui.button("Add words");
+                    let button_response = ui.button("Add characters");
                     let text_edit_response = ui.add_sized(
                         ui.available_size(),
-                        TextEdit::singleline(&mut self.manual_input),
+                        TextEdit::singleline(&mut self.special_chars_manual_input).text_color_opt(
+                            if self.special_chars_good {
+                                None
+                            } else {
+                                Some(Color32::RED)
+                            },
+                        ),
                     );
 
                     if button_response.clicked()
                         || text_edit_response.lost_focus() && ui.input().key_pressed(Key::Enter)
                     {
-                        self.settings.get_words_from_str(&self.manual_input);
-                        self.manual_input.clear();
+                        match self
+                            .settings
+                            .set_special_chars(&self.special_chars_manual_input)
+                        {
+                            Ok(_) => self.special_chars_good = true,
+                            Err(_) => self.special_chars_good = false,
+                        }
+                    }
+                });
+            });
+            ui.separator();
+
+            ui.horizontal(|ui| {
+                ui.label("Input words manually:");
+                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                    let button_response = ui.button("Add words");
+                    let text_edit_response = ui.add_sized(
+                        ui.available_size(),
+                        TextEdit::singleline(&mut self.words_manual_input),
+                    );
+
+                    if button_response.clicked()
+                        || text_edit_response.lost_focus() && ui.input().key_pressed(Key::Enter)
+                    {
+                        self.settings.get_words_from_str(&self.words_manual_input);
+                        self.words_manual_input.clear();
                     }
                 });
             });
@@ -176,4 +214,8 @@ impl App for Gui {
             });
         });
     }
+}
+
+fn selectable_text(ui: &mut Ui, mut text: &str) {
+    ui.add_sized(ui.available_size(), TextEdit::singleline(&mut text));
 }

@@ -92,10 +92,6 @@ impl App for Gui {
                 "Replace characters instead of inserting them",
             );
             ui.checkbox(&mut self.settings.randomise, "Randomise the words");
-            ui.checkbox(
-                &mut self.settings.keep_numbers,
-                "Keep the numbers from the sources",
-            );
             if self.settings.dont_upper {
                 ui.add_enabled(
                     false,
@@ -168,6 +164,10 @@ impl App for Gui {
             });
             ui.separator();
 
+            ui.checkbox(
+                &mut self.settings.keep_numbers,
+                "Keep the numbers from the sources",
+            );
             ui.horizontal(|ui| {
                 ui.label("Input words manually:");
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {

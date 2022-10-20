@@ -186,22 +186,26 @@ impl App for Gui {
                 });
             });
 
-            ui.horizontal(|ui| {
-                if ui.button("Load words from files").clicked() {
-                    if let Some(paths) = FileDialog::new().pick_files() {
-                        for path in paths {
-                            self.settings.get_words_from_path(path).unwrap();
+            ui.columns(2, |columns| {
+                columns[0].vertical_centered_justified(|ui| {
+                    if ui.button("Load words from files").clicked() {
+                        if let Some(paths) = FileDialog::new().pick_files() {
+                            for path in paths {
+                                self.settings.get_words_from_path(path).unwrap();
+                            }
                         }
                     }
-                }
+                });
 
-                if ui.button("Load words from directories").clicked() {
-                    if let Some(paths) = FileDialog::new().pick_folders() {
-                        for path in paths {
-                            self.settings.get_words_from_path(path).unwrap();
+                columns[1].vertical_centered_justified(|ui| {
+                    if ui.button("Load words from directories").clicked() {
+                        if let Some(paths) = FileDialog::new().pick_folders() {
+                            for path in paths {
+                                self.settings.get_words_from_path(path).unwrap();
+                            }
                         }
                     }
-                }
+                });
             });
 
             let words = self.settings.get_words();

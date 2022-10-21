@@ -7,6 +7,7 @@ use std::{fs, fs::metadata, ops::RangeInclusive, path::Path};
 
 /// Used for configuring the password generator.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct PasswordSettings {
     /// ### Uppercase the first character of every word
     ///

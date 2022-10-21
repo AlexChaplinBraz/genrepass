@@ -10,11 +10,12 @@ repository = "https://github.com/AlexChaplinBraz/genrepass"
 readme = "README.md"
 license = "MIT"
 edition = "2021"
-keywords = ["generate", "readable", "secure", "password", "text", ]
+keywords = ["generate", "readable", "secure", "password", "text"]
 categories = ["authentication"]
 
 [dependencies]
 deunicode = "1.1.1"
 rand = "0.8"
 regex = "1.4"
+serde = { version = "1.0", features = ["derive"], optional = true }
 snafu = "0.7"

@@ -299,6 +299,15 @@ impl PasswordSettings {
         self.words.clear();
     }
 
+    /// Remove a word at index.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index` is out of bounds.
+    pub fn remove_word_at(&mut self, index: usize) {
+        self.words.remove(index);
+    }
+
     /// Generate a vector of passwords.
     pub fn generate(&self) -> Result<Vec<String>, NotEnoughWordsError> {
         ensure!(

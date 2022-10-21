@@ -215,13 +215,19 @@ impl App for Gui {
             });
 
             let words = self.settings.get_words();
+            let mut index_to_remove = None;
             ScrollArea::vertical().show(ui, |ui| {
                 ui.horizontal_wrapped(|ui| {
-                    for word in words {
-                        ui.label(word);
+                    for (index, word) in words.iter().enumerate() {
+                        if ui.button(word).on_hover_text("Click to remove").clicked() {
+                            index_to_remove = Some(index);
+                        }
                     }
                 });
             });
+            if let Some(index) = index_to_remove {
+                self.settings.remove_word_at(index);
+            }
         });
     }
 }

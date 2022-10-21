@@ -186,7 +186,7 @@ impl App for Gui {
                 });
             });
 
-            ui.columns(2, |columns| {
+            ui.columns(3, |columns| {
                 columns[0].vertical_centered_justified(|ui| {
                     if ui.button("Load words from files").clicked() {
                         if let Some(paths) = FileDialog::new().pick_files() {
@@ -204,6 +204,12 @@ impl App for Gui {
                                 self.settings.get_words_from_path(path).unwrap();
                             }
                         }
+                    }
+                });
+
+                columns[2].vertical_centered_justified(|ui| {
+                    if ui.button("Clear words").clicked() {
+                        self.settings.clear_words();
                     }
                 });
             });

@@ -294,6 +294,11 @@ impl PasswordSettings {
         &self.words
     }
 
+    /// Clear the vector of words.
+    pub fn clear_words(&mut self) {
+        self.words.clear();
+    }
+
     /// Generate a vector of passwords.
     pub fn generate(&self) -> Result<Vec<String>, NotEnoughWordsError> {
         ensure!(

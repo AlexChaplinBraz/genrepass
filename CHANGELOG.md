@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `PasswordSettings::clear_words()`.
 - `range_inc_from_str()` for getting a `RangeInclusive` from a `String`.
 
 ### Changed

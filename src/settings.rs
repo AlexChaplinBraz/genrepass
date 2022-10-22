@@ -362,12 +362,12 @@ impl PasswordSettings {
     }
 }
 
-/// When non-ASCII characters are found during [`set_special_chars`](PasswordSettings#method.set_special_chars).
+/// When non-ASCII characters are found during [`PasswordSettings::set_special_chars()`].
 #[derive(Debug, Snafu)]
 #[snafu(display("non-ASCII special characters aren't allowed for insertables"))]
 pub struct NonAsciiSpecialCharsError;
 
-/// When the [`PasswordSettings`] holds either one or zero words.
+/// When [`PasswordSettings`] holds either one or zero words.
 ///
 /// The reason one word isn't allowed is due to the use of [`std::iter::Peekable`].
 #[derive(Debug, Snafu)]

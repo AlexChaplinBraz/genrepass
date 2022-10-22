@@ -16,7 +16,7 @@ fn main() {
     let native_options = NativeOptions::default();
 
     run_native(
-        "genrepass GUI",
+        "Readable Password Generator",
         native_options,
         Box::new(|_cc| Box::new(Gui::new(ctx))),
     );

@@ -1,3 +1,5 @@
+#![cfg_attr(all(doc, CHANNEL_NIGHTLY), feature(doc_auto_cfg))]
+
 /*!
 # Readable password generator
 
@@ -57,6 +59,11 @@ fn run() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 ```
+
+# Features
+
+- `serde` — Enables serialisation and deserialisation
+- `rayon` — Enables parallelisation with [`PasswordSettings::generate_parallel()`]
 */
 
 mod helpers;

@@ -319,7 +319,43 @@ impl PasswordSettings {
         let mut passwords = Vec::new();
 
         for _ in 0..self.pass_amount {
-            passwords.push(Password::generate(self));
+            passwords.push(Password::init(self).generate(self));
+        }
+
+        Ok(passwords)
+    }
+
+    /// Generate a vector of passwords with [`rayon`].
+    #[cfg(feature = "rayon")]
+    pub fn generate_parallel(&self) -> Result<Vec<String>, NotEnoughWordsError> {
+        use rayon::prelude::*;
+        use std::sync::mpsc::channel;
+
+        ensure!(
+            !self.words.is_empty() && self.words.len() > 1,
+            NotEnoughWordsSnafu
+        );
+
+        let mut password_settings = Vec::new();
+
+        for _ in 0..self.pass_amount {
+            password_settings.push(Password::init(self));
+        }
+
+        let (sender, receiver) = channel();
+
+        password_settings
+            .into_par_iter()
+            .for_each_with(sender, |sender, mut password| {
+                sender
+                    .send(password.generate(self))
+                    .expect("receiver should still be alive until all passwords are generated");
+            });
+
+        let mut passwords = Vec::new();
+
+        while let Ok(value) = receiver.try_recv() {
+            passwords.push(value);
         }
 
         Ok(passwords)

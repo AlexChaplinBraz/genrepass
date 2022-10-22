@@ -16,6 +16,7 @@ categories = ["authentication"]
 [dependencies]
 deunicode = "1.1.1"
 rand = "0.8"
+rayon = { version = "1.5", optional = true }
 regex = "1.4"
 serde = { version = "1.0", features = ["derive"], optional = true }
 snafu = "0.7"

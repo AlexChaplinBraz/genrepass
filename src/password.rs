@@ -3,6 +3,7 @@ use crate::{
     settings::PasswordSettings,
 };
 use rand::{distributions::Uniform, seq::SliceRandom, thread_rng, Rng};
+use std::mem::take;
 
 pub(crate) struct Password {
     password: String,
@@ -18,23 +19,21 @@ pub(crate) struct Password {
 }
 
 impl Password {
-    pub(crate) fn generate(config: &PasswordSettings) -> String {
-        let mut pass = Password::init(config);
-
-        pass.get_pass_string(config);
+    pub(crate) fn generate(&mut self, config: &PasswordSettings) -> String {
+        self.get_pass_string(config);
 
         if config.replace {
-            pass.replace_chars();
+            self.replace_chars();
         } else {
-            pass.insert_chars();
+            self.insert_chars();
         }
 
-        pass.ensure_case(config);
+        self.ensure_case(config);
 
-        pass.password
+        take(&mut self.password)
     }
 
-    fn init(config: &PasswordSettings) -> Password {
+    pub(crate) fn init(config: &PasswordSettings) -> Password {
         let mut rng = thread_rng();
 
         let mut min_len = *config.length.start();

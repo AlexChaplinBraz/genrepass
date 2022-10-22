@@ -137,7 +137,7 @@ impl App for Gui {
             ui.horizontal(|ui| {
                 ui.label("Input special characters:");
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                    let button_response = ui.button("Add characters");
+                    let button_response = ui.button("Replace characters");
                     let text_edit_response = ui.add_sized(
                         ui.available_size(),
                         TextEdit::singleline(&mut self.special_chars_manual_input).text_color_opt(

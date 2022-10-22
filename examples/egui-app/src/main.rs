@@ -1,8 +1,8 @@
 use copypasta_ext::{prelude::ClipboardProvider, x11_bin::ClipboardContext};
 use eframe::{
     egui::{
-        Button, CentralPanel, Checkbox, Color32, DragValue, Key, Layout, ScrollArea, TextEdit,
-        TopBottomPanel, Ui,
+        Button, CentralPanel, Checkbox, Color32, DragValue, Key, Label, Layout, RichText,
+        ScrollArea, TextEdit, TopBottomPanel, Ui,
     },
     emath::Align,
     get_value, run_native, set_value, App, CreationContext, NativeOptions, Storage, APP_KEY,
@@ -72,8 +72,23 @@ impl App for Gui {
             });
 
         CentralPanel::default().show(ctx, |ui| {
-            ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                ui.heading("Readable Password Generator");
+            ui.horizontal(|ui| {
+                ui.add_space(20.0);
+                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                    if ui
+                        .button("⟲")
+                        .on_hover_text("Reset the settings to the defaults")
+                        .clicked()
+                    {
+                        let words = self.settings.get_words().join(" ");
+                        self.settings = Default::default();
+                        self.settings.get_words_from_str(&words);
+                    }
+                    ui.add_sized(
+                        ui.available_size(),
+                        Label::new(RichText::new("Readable Password Generator").heading()),
+                    );
+                });
             });
             ui.separator();
 

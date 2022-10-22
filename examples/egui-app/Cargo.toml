@@ -8,6 +8,7 @@ publish = false
 
 [dependencies]
 copypasta-ext = "0.3"
-eframe = "0.19"
-genrepass = { path = "../../" }
+eframe = { version = "0.19", features = ["persistence"] }
+genrepass = { path = "../../", features = ["serde"] }
 rfd = "0.10"
+serde = { version = "1.0", features = ["derive"] }

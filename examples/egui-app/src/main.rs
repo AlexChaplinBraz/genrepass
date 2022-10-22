@@ -5,41 +5,40 @@ use eframe::{
         TopBottomPanel, Ui,
     },
     emath::Align,
-    run_native, App, NativeOptions,
+    get_value, run_native, set_value, App, CreationContext, NativeOptions, Storage, APP_KEY,
 };
 use genrepass::PasswordSettings;
 use rfd::FileDialog;
+use serde::{Deserialize, Serialize};
 
 fn main() {
-    let ctx = ClipboardContext::new().unwrap();
-
     let native_options = NativeOptions::default();
 
     run_native(
         "Readable Password Generator",
         native_options,
-        Box::new(|_cc| Box::new(Gui::new(ctx))),
+        Box::new(|cc| Box::new(Gui::new(cc))),
     );
 }
 
+#[derive(Default, Deserialize, Serialize)]
+#[serde(default)]
 struct Gui {
     settings: PasswordSettings,
     passwords: Vec<String>,
-    clipboard: ClipboardContext,
     words_manual_input: String,
     special_chars_manual_input: String,
     special_chars_good: bool,
 }
 
 impl Gui {
-    fn new(clipboard: ClipboardContext) -> Self {
-        Gui {
-            settings: Default::default(),
-            passwords: Default::default(),
-            clipboard,
-            words_manual_input: Default::default(),
-            special_chars_manual_input: Default::default(),
-            special_chars_good: true,
+    fn new(cc: &CreationContext) -> Self {
+        match cc.storage {
+            Some(storage) => get_value(storage, APP_KEY).unwrap_or_default(),
+            None => Gui {
+                special_chars_good: true,
+                ..Default::default()
+            },
         }
     }
 }
@@ -62,7 +61,8 @@ impl App for Gui {
                                 for password in &self.passwords {
                                     if ui.button(password).on_hover_text("Click to copy").clicked()
                                     {
-                                        self.clipboard.set_contents(password.to_owned()).unwrap();
+                                        let mut ctx = ClipboardContext::new().unwrap();
+                                        ctx.set_contents(password.to_owned()).unwrap();
                                     }
                                 }
                             });
@@ -229,6 +229,10 @@ impl App for Gui {
                 self.settings.remove_word_at(index);
             }
         });
+    }
+
+    fn save(&mut self, storage: &mut dyn Storage) {
+        set_value(storage, APP_KEY, self);
     }
 }
 

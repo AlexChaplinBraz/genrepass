@@ -49,12 +49,36 @@ impl App for Gui {
             .min_height(100.0)
             .show(ctx, |ui| {
                 ui.with_layout(Layout::top_down_justified(Align::Center), |ui| {
-                    if self.settings.get_words().len() <= 1 {
-                        ui.add_enabled(false, Button::new("Generate"))
-                            .on_disabled_hover_text("Must have more than one word for generation");
-                    } else if ui.button("Generate").clicked() {
-                        self.passwords = self.settings.generate().unwrap();
-                    }
+                    ui.columns(2, |columns| {
+                        columns[0].vertical_centered_justified(|ui| {
+                            if self.settings.get_words().len() <= 1 {
+                                ui.add_enabled(false, Button::new("Generate"))
+                                    .on_disabled_hover_text(
+                                        "Must have more than one word for generation",
+                                    );
+                            } else if ui
+                                .button("Generate")
+                                .on_hover_text("Uses only a single thread")
+                                .clicked()
+                            {
+                                self.passwords = self.settings.generate().unwrap();
+                            }
+                        });
+                        columns[1].with_layout(Layout::top_down_justified(Align::Center), |ui| {
+                            if self.settings.get_words().len() <= 1 {
+                                ui.add_enabled(false, Button::new("Generate parallel"))
+                                    .on_disabled_hover_text(
+                                        "Must have more than one word for generation",
+                                    );
+                            } else if ui
+                                .button("Generate parallel")
+                                .on_hover_text("Uses all available threads")
+                                .clicked()
+                            {
+                                self.passwords = self.settings.generate_parallel().unwrap();
+                            }
+                        });
+                    });
                     if !self.passwords.is_empty() {
                         ScrollArea::vertical().show(ui, |ui| {
                             ui.horizontal_wrapped(|ui| {

@@ -96,7 +96,7 @@ impl App for Gui {
                 ui.add(
                     DragValue::new(&mut self.settings.pass_amount)
                         .speed(1)
-                        .clamp_range(1..=1000),
+                        .clamp_range(1..=100000),
                 );
                 ui.label("Amount of passwords to generate");
             });

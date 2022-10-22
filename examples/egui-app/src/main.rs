@@ -77,7 +77,7 @@ impl App for Gui {
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                     if ui
                         .button("⟲")
-                        .on_hover_text("Reset the settings to the defaults")
+                        .on_hover_text("Reset the settings to their defaults")
                         .clicked()
                     {
                         let words = self.settings.get_words().join(" ");

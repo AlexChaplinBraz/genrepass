@@ -24,5 +24,12 @@ snafu = "0.7"
 [build-dependencies]
 rustc_version = "0.4"
 
+[dev-dependencies]
+brunch = "0.3"
+
+[[bench]]
+name = "marks"
+harness = false
+
 [package.metadata.docs.rs]
 all-features = true

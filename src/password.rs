@@ -100,18 +100,19 @@ impl Password {
 
     fn get_pass_string(&mut self, config: &PasswordSettings) {
         let mut rng = thread_rng();
-        let start_index = rng.gen_range(0..config.words.len());
+        let start_index = rng.gen_range(0..config.words.read().unwrap().len());
 
-        let mut text = config.words.clone();
-        let mut words = text.iter_mut().skip(start_index).peekable();
+        let text = config.words.read().unwrap();
+        let mut words = text.iter().skip(start_index).peekable();
 
         loop {
             if let Some(w) = words.next() {
                 if config.capitalise {
-                    capitalise(w, 0);
+                    let w = w[0..1].to_ascii_uppercase() + &w[1..];
+                    self.password.push_str(w.as_str());
+                } else {
+                    self.password.push_str(w.as_str());
                 }
-
-                self.password.push_str(w.as_str());
 
                 match words.peek() {
                     Some(p) => {
@@ -142,7 +143,7 @@ impl Password {
                         }
                     }
                     None => {
-                        words = text.iter_mut().skip(0).peekable();
+                        words = text.iter().skip(0).peekable();
                     }
                 }
             }

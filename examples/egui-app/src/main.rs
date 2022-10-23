@@ -29,6 +29,7 @@ struct Gui {
     words_manual_input: String,
     special_chars_manual_input: String,
     special_chars_good: bool,
+    word_index_to_remove: Option<usize>,
 }
 
 impl Gui {
@@ -253,20 +254,19 @@ impl App for Gui {
                 });
             });
 
-            let words = self.settings.get_words();
-            let mut index_to_remove = None;
+            if let Some(index) = self.word_index_to_remove {
+                self.settings.remove_word_at(index);
+            }
+
             ScrollArea::vertical().show(ui, |ui| {
                 ui.horizontal_wrapped(|ui| {
-                    for (index, word) in words.iter().enumerate() {
+                    for (index, word) in self.settings.get_words().iter().enumerate() {
                         if ui.button(word).on_hover_text("Click to remove").clicked() {
-                            index_to_remove = Some(index);
+                            self.word_index_to_remove = Some(index);
                         }
                     }
                 });
             });
-            if let Some(index) = index_to_remove {
-                self.settings.remove_word_at(index);
-            }
         });
     }
 

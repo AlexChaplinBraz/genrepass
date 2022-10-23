@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - To using dedicated errors.
 - To using `RangeInclusive` instead of processed `String`s.
 
+### Removed
+
+- Cloning all the words on each password generation leading to **massive** performance improvements.
+
 ## [1.1.4] - 2022-10-01
 <!--BEGIN=1.1.4-->
 Last 1.x release before refactor. Updated all dependencies.

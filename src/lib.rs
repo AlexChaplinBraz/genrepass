@@ -62,7 +62,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 
 # Features
 
-- `serde` — Enables serialisation and deserialisation
+- `serde` — Enables the serialisation and deserialisation of [`PasswordSettings`]
 - `rayon` — Enables parallelisation with [`PasswordSettings::generate_parallel()`]
 */
 

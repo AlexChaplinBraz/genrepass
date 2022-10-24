@@ -29,6 +29,11 @@ therearetoomAny{volum9estob(eadaptedi9ntoThe
 
 Can be found at [docs.rs/genrepass](https://docs.rs/genrepass).
 
+## Features
+
+- `serde` — Enables the serialisation and deserialisation of `PasswordSettings`
+- `rayon` — Enables parallelisation with `PasswordSettings::generate_parallel()`
+
 ## History
 
 This used to be a binary crate that was a port of

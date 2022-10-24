@@ -1,5 +1,7 @@
 # Readable password generator (library)
 
+**NOTE:** Currently doing a major refactor for version 2.
+
 Library for **gen**erating **re**adable **pass**words from an ordered list of words extracted from text.
 For improved security, numbers and special characters are inserted at random places.
 

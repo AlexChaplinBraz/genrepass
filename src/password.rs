@@ -7,14 +7,19 @@ use std::mem::take;
 
 pub(crate) struct Password {
     password: String,
+    reset_amount: usize,
     reset_count: usize,
     min_len: usize,
     max_len: usize,
     total_inserts: usize,
+    capitalise: bool,
+    replace: bool,
     upper: usize,
     lower: usize,
     force_upper: bool,
     force_lower: bool,
+    dont_upper: bool,
+    dont_lower: bool,
     insertables: Vec<char>,
 }
 
@@ -22,13 +27,13 @@ impl Password {
     pub(crate) fn generate(&mut self, config: &PasswordSettings) -> String {
         self.get_pass_string(config);
 
-        if config.replace {
+        if self.replace {
             self.replace_chars();
         } else {
             self.insert_chars();
         }
 
-        self.ensure_case(config);
+        self.ensure_case();
 
         take(&mut self.password)
     }
@@ -86,14 +91,19 @@ impl Password {
 
         Password {
             password: String::with_capacity(max_len),
+            reset_amount: config.reset_amount,
             reset_count: 0,
             min_len,
             max_len,
             total_inserts,
+            capitalise: config.capitalise,
+            replace: config.replace,
             upper,
             lower,
             force_upper: config.force_upper,
             force_lower: config.force_lower,
+            dont_upper: config.dont_upper,
+            dont_lower: config.dont_lower,
             insertables,
         }
     }
@@ -107,7 +117,7 @@ impl Password {
 
         loop {
             if let Some(w) = words.next() {
-                if config.capitalise {
+                if self.capitalise {
                     let w = w[0..1].to_ascii_uppercase() + &w[1..];
                     self.password.push_str(w.as_str());
                 } else {
@@ -126,7 +136,7 @@ impl Password {
                                 && self.password.len() <= self.max_len
                             {
                                 break;
-                            } else if self.reset_count >= config.reset_amount {
+                            } else if self.reset_count >= self.reset_amount {
                                 self.password.truncate(self.max_len);
                                 break;
                             } else {
@@ -191,7 +201,7 @@ impl Password {
         }
     }
 
-    fn ensure_case(&mut self, config: &PasswordSettings) {
+    fn ensure_case(&mut self) {
         let mut rng = thread_rng();
 
         let u_amount = self
@@ -220,7 +230,7 @@ impl Password {
             self.upper = l_indices.len();
         }
 
-        if self.force_upper && !config.dont_upper {
+        if self.force_upper && !self.dont_upper {
             for _ in 0..self.upper {
                 let i = l_indices.remove(rng.gen_range(0..l_indices.len()));
                 capitalise(self.password.as_mut_str(), i)
@@ -248,7 +258,7 @@ impl Password {
             self.lower = u_indices.len();
         }
 
-        if self.force_lower && !config.dont_lower {
+        if self.force_lower && !self.dont_lower {
             for _ in 0..self.lower {
                 let i = u_indices.remove(rng.gen_range(0..u_indices.len()));
                 decapitalise(self.password.as_mut_str(), i)

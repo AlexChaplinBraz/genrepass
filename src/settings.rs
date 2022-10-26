@@ -325,7 +325,7 @@ impl PasswordSettings {
         let mut passwords = Vec::new();
 
         for _ in 0..self.pass_amount {
-            passwords.push(Password::init(self).generate(self));
+            passwords.push(Password::new(self).generate(self));
         }
 
         Ok(passwords)
@@ -345,7 +345,7 @@ impl PasswordSettings {
         let mut password_settings = Vec::new();
 
         for _ in 0..self.pass_amount {
-            password_settings.push(Password::init(self));
+            password_settings.push(Password::new(self));
         }
 
         let (sender, receiver) = channel();

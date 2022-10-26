@@ -33,7 +33,7 @@ impl Password {
         take(&mut self.password)
     }
 
-    pub(crate) fn init(config: &PasswordSettings) -> Password {
+    pub(crate) fn new(config: &PasswordSettings) -> Password {
         let mut rng = thread_rng();
 
         let mut min_len = *config.length.start();

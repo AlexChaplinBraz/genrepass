@@ -65,6 +65,10 @@ pub struct PasswordSettings {
     /// for a password of that exact length.
     ///
     /// **Default: 24-30**
+    ///
+    /// # Panics
+    ///
+    /// Panics upon generation if the inclusive range is empty (i.e. end < start).
     pub length: RangeInclusive<usize>,
 
     /// ### Amount of numbers to insert
@@ -74,6 +78,10 @@ pub struct PasswordSettings {
     /// in the password if 'keep-nums' is activated.
     ///
     /// **Default: 1-2**
+    ///
+    /// # Panics
+    ///
+    /// Panics upon generation if the inclusive range is empty (i.e. end < start).
     pub number_amount: RangeInclusive<usize>,
 
     /// ### Amount of special characters to insert
@@ -81,6 +89,10 @@ pub struct PasswordSettings {
     /// Can take either a range like 2-4 or an exact amount like 2.
     ///
     /// **Default: 1-2**
+    ///
+    /// # Panics
+    ///
+    /// Panics upon generation if the inclusive range is empty (i.e. end < start).
     pub special_chars_amount: RangeInclusive<usize>,
 
     /// ### The special characters to insert
@@ -99,6 +111,10 @@ pub struct PasswordSettings {
     /// unless [`force_upper`](PasswordSettings#structfield.force_upper) is turned on manually.
     ///
     /// **Default: 1-2**
+    ///
+    /// # Panics
+    ///
+    /// Panics upon generation if the inclusive range is empty (i.e. end < start).
     pub upper_amount: RangeInclusive<usize>,
 
     /// ### Amount of lowercase characters
@@ -110,6 +126,10 @@ pub struct PasswordSettings {
     /// unless [`force_lower`](PasswordSettings#structfield.force_lower) is turned on manually.
     ///
     /// **Default: 1-2**
+    ///
+    /// # Panics
+    ///
+    /// Panics upon generation if the inclusive range is empty (i.e. end < start).
     pub lower_amount: RangeInclusive<usize>,
 
     /// ### Choose to keep numbers from the source in the password
@@ -316,6 +336,10 @@ impl PasswordSettings {
     }
 
     /// Generate a vector of passwords.
+    ///
+    /// # Panics
+    ///
+    /// Panics if any of the inclusive ranges are empty (i.e. end < start).
     pub fn generate(&self) -> Result<Vec<String>, NotEnoughWordsError> {
         ensure!(
             !self.words.read().unwrap().is_empty() && self.words.read().unwrap().len() > 1,
@@ -332,6 +356,10 @@ impl PasswordSettings {
     }
 
     /// Generate a vector of passwords with [`rayon`].
+    ///
+    /// # Panics
+    ///
+    /// Panics if any of the inclusive ranges are empty (i.e. end < start).
     #[cfg(feature = "rayon")]
     pub fn generate_parallel(&self) -> Result<Vec<String>, NotEnoughWordsError> {
         use rayon::prelude::*;

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Lexicon` for storing the words separate from the settings of the generator
+  and to be able to have more settings for extracting words from text.
 - `serde` feature.
 - `rayon` feature for parallelisation.
 - `PasswordSettings::clear_words()`.

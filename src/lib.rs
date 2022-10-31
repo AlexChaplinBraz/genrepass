@@ -67,9 +67,11 @@ fn run() -> Result<(), Box<dyn Error>> {
 */
 
 mod helpers;
+mod lexicon;
 mod password;
 mod settings;
 pub use crate::{
     helpers::{range_inc_from_str, ParseRangeError},
+    lexicon::{Lexicon, SplitMode},
     settings::{NonAsciiSpecialCharsError, NotEnoughWordsError, PasswordSettings},
 };

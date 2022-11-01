@@ -8,12 +8,8 @@ use unicode_segmentation::UnicodeSegmentation;
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Lexicon {
     pub split_mode: SplitMode,
-    pub randomise: bool,
     pub deunicode: bool,
-    pub remove_ascii_digits: bool,
-    pub remove_ascii_punctuation: bool,
-    pub remove_non_ascii_alphanumeric: bool,
-    pub remove_non_ascii: bool,
+    pub randomise: bool,
     words: Vec<String>,
 }
 
@@ -28,10 +24,14 @@ impl Lexicon {
 
     /// Extract words from a string.
     ///
-    /// The behaviour of this method is controlled by the fields on [`Lexicon`].
+    /// How the words are parsed is controlled by the `filter` closure,
+    /// which is passed to `.retain()` on each word.
     ///
     /// Returns immediately if `text` is empty.
-    pub fn extract_words(&mut self, text: &str) {
+    pub fn extract_words<F>(&mut self, text: &str, mut filter: F)
+    where
+        F: FnMut(char) -> bool,
+    {
         if text.is_empty() {
             return;
         }
@@ -54,12 +54,7 @@ impl Lexicon {
         };
 
         for word in split_words.iter_mut() {
-            word.retain(|c| {
-                !(self.remove_ascii_digits && c.is_ascii_digit()
-                    || self.remove_ascii_punctuation && c.is_ascii_punctuation()
-                    || self.remove_non_ascii_alphanumeric && !c.is_ascii_alphanumeric()
-                    || self.remove_non_ascii && !c.is_ascii())
-            });
+            word.retain(&mut filter);
 
             if word.is_empty() {
                 continue;

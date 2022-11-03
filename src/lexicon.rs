@@ -102,3 +102,70 @@ pub enum SplitMode {
     UnicodeWhitespace,
     AsciiWhitespace,
 }
+
+/// Some reasonable character filtering options.
+#[derive(Debug)]
+pub enum CharFilter {
+    Ascii,
+    AsciiWithoutPunctuation,
+    AsciiWithoutDigits,
+    AsciiWithoutDigitsOrPunctuation,
+    Unicode,
+    UnicodeWithoutAsciiDigits,
+    UnicodeWithoutNumbers,
+    UnicodeWithoutAsciiPunctuation,
+    UnicodeWithoutAsciiDigitsOrAsciiPunctuation,
+    UnicodeWithoutNumbersOrAsciiPunctuation,
+}
+
+impl CharFilter {
+    /// Returns a closure for use in [`Lexicon::extract_words()`].
+    pub fn closure(&self) -> impl FnMut(char) -> bool {
+        match self {
+            CharFilter::Ascii => {
+                |c: char| c.is_ascii() && !c.is_ascii_whitespace() && !c.is_ascii_control()
+            }
+            CharFilter::AsciiWithoutPunctuation => |c: char| {
+                c.is_ascii()
+                    && !c.is_ascii_punctuation()
+                    && !c.is_ascii_whitespace()
+                    && !c.is_ascii_control()
+            },
+            CharFilter::AsciiWithoutDigits => |c: char| {
+                c.is_ascii()
+                    && !c.is_ascii_digit()
+                    && !c.is_ascii_whitespace()
+                    && !c.is_ascii_control()
+            },
+            CharFilter::AsciiWithoutDigitsOrPunctuation => |c: char| {
+                c.is_ascii()
+                    && !c.is_ascii_digit()
+                    && !c.is_ascii_punctuation()
+                    && !c.is_ascii_whitespace()
+                    && !c.is_ascii_control()
+            },
+            CharFilter::Unicode => |c: char| !c.is_whitespace() && !c.is_control(),
+            CharFilter::UnicodeWithoutAsciiDigits => {
+                |c: char| !c.is_ascii_digit() && !c.is_whitespace() && !c.is_control()
+            }
+            CharFilter::UnicodeWithoutNumbers => {
+                |c: char| !c.is_numeric() && !c.is_whitespace() && !c.is_control()
+            }
+            CharFilter::UnicodeWithoutAsciiPunctuation => {
+                |c: char| !c.is_ascii_punctuation() && !c.is_whitespace() && !c.is_control()
+            }
+            CharFilter::UnicodeWithoutAsciiDigitsOrAsciiPunctuation => |c: char| {
+                !c.is_ascii_digit()
+                    && !c.is_ascii_punctuation()
+                    && !c.is_whitespace()
+                    && !c.is_control()
+            },
+            CharFilter::UnicodeWithoutNumbersOrAsciiPunctuation => |c: char| {
+                !c.is_numeric()
+                    && !c.is_ascii_punctuation()
+                    && !c.is_whitespace()
+                    && !c.is_control()
+            },
+        }
+    }
+}

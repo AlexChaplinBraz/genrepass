@@ -68,6 +68,7 @@ impl Lexicon {
         }
     }
 
+    /// Shuffle the words.
     pub fn randomise(&mut self) {
         self.words.shuffle(&mut thread_rng());
     }

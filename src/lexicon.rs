@@ -7,8 +7,41 @@ use unicode_segmentation::UnicodeSegmentation;
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Lexicon {
+    /// The way to split the text into words.
     pub split_mode: SplitMode,
+    /// Flag for transliterating any Unicode text into ASCII text during extraction.
+    ///
+    /// This also translates emoji into text. For example:
+    ///   * 😃 -> smiley
+    ///   * 🥫 -> canned food
+    ///   * 📬 -> mailbox with mail
+    ///   * 🇪🇸 -> ES
+    ///
+    /// Keep in mind that deunicoding happens before word splitting,
+    /// so if the emoji turns into multiple words,
+    /// they will be split according to the split mode.
+    ///
+    /// # Guarantees and Warnings
+    ///
+    /// Here are some guarantees you have when enabling `deunicode`:
+    ///   * The words returned will be valid ASCII; the decimal representation of
+    ///     every `char` in the words will be between 0 and 127, inclusive.
+    ///   * Every ASCII character (0x0000 - 0x007F) is mapped to itself.
+    ///   * All Unicode characters will translate to a string containing newlines
+    ///     (`"\n"`) or ASCII characters in the range 0x0020 - 0x007E. So for example,
+    ///     no Unicode character will translate to `\u{01}`. The exception is if the
+    ///     ASCII character itself is passed in, in which case it will be mapped to
+    ///     itself. (So `'\u{01}'` will be mapped to `"\u{01}"`.)
+    ///
+    /// There are, however, some things you should keep in mind:
+    ///   * As stated, some transliterations do produce `\n` characters.
+    ///   * Some Unicode characters transliterate to an empty string on purpose.
+    ///   * Some Unicode characters are unknown and transliterate to `"[?]"`.
+    ///   * Many Unicode characters transliterate to multi-character strings. For
+    ///     example, 北 is transliterated as "Bei ".
+    ///   * Han characters are mapped to Mandarin, and will be mostly illegible to Japanese readers.
     pub deunicode: bool,
+    /// Flag for randomising all the words at the end of word extraction.
     pub randomise: bool,
     words: Vec<String>,
 }

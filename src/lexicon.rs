@@ -24,10 +24,11 @@ impl Lexicon {
 
     /// Extract words from a string.
     ///
-    /// How the words are parsed is controlled by the `filter` closure,
-    /// which is passed to `.retain()` on each word.
+    /// The `filter` closure is passed directly into [`String::retain()`], which runs on each split word.
     ///
-    /// Returns immediately if `text` is empty.
+    /// You can choose to use one of the default filters provided by [`CharFilter`],
+    /// or you can pass your own closure with custom parsing.
+    /// Look at [`CharFilter::closure()`] for examples.
     pub fn extract_words<F>(&mut self, text: &str, mut filter: F)
     where
         F: FnMut(char) -> bool,
@@ -121,6 +122,9 @@ pub enum CharFilter {
 
 impl CharFilter {
     /// Returns a closure for use in [`Lexicon::extract_words()`].
+    ///
+    /// This closure is designed to be passed to [`String::retain()`].
+    /// It runs on each `char` and only keeps the `char`s that returned `true`.
     pub fn closure(&self) -> impl FnMut(char) -> bool {
         match self {
             CharFilter::Ascii => {

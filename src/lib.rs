@@ -72,6 +72,6 @@ mod password;
 mod settings;
 pub use crate::{
     helpers::{range_inc_from_str, ParseRangeError},
-    lexicon::{CharFilter, Lexicon, SplitMode},
+    lexicon::{CharFilter, Lexicon, Split},
     settings::{NonAsciiSpecialCharsError, NotEnoughWordsError, PasswordSettings},
 };

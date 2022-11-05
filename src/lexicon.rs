@@ -8,7 +8,7 @@ use unicode_segmentation::UnicodeSegmentation;
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Lexicon {
     /// The way to split the text into words.
-    pub split_mode: SplitMode,
+    pub split: Split,
     /// Flag for transliterating any Unicode text into ASCII text during extraction.
     ///
     /// This also translates emoji into text. For example:
@@ -48,9 +48,9 @@ pub struct Lexicon {
 
 impl Lexicon {
     /// Create a new [`Lexicon`] with a specific split mode and everything turned off.
-    pub fn new(split_mode: SplitMode) -> Self {
+    pub fn new(split: Split) -> Self {
         Self {
-            split_mode,
+            split,
             ..Default::default()
         }
     }
@@ -78,13 +78,11 @@ impl Lexicon {
             text
         };
 
-        let mut split_words: Vec<String> = match self.split_mode {
-            SplitMode::UnicodeWords => text.unicode_words().map(str::to_string).collect(),
-            SplitMode::WordBounds => text.split_word_bounds().map(str::to_string).collect(),
-            SplitMode::UnicodeWhitespace => text.split_whitespace().map(str::to_string).collect(),
-            SplitMode::AsciiWhitespace => {
-                text.split_ascii_whitespace().map(str::to_string).collect()
-            }
+        let mut split_words: Vec<String> = match self.split {
+            Split::UnicodeWords => text.unicode_words().map(str::to_string).collect(),
+            Split::WordBounds => text.split_word_bounds().map(str::to_string).collect(),
+            Split::UnicodeWhitespace => text.split_whitespace().map(str::to_string).collect(),
+            Split::AsciiWhitespace => text.split_ascii_whitespace().map(str::to_string).collect(),
         };
 
         for word in split_words.iter_mut() {
@@ -130,7 +128,7 @@ impl Lexicon {
 /// The way to split the text into words.
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-pub enum SplitMode {
+pub enum Split {
     /// Splits the text into words based on on
     /// [UAX#29 word boundaries](http://www.unicode.org/reports/tr29/#Word_Boundaries).
     ///
@@ -144,11 +142,11 @@ pub enum SplitMode {
     /// # Examples
     ///
     /// ```
-    /// # use genrepass::{Lexicon, SplitMode};
+    /// # use genrepass::{Lexicon, Split};
     /// let text = "The ⚡quick⚡ (\"brown\") 🐒 can't❌jump 32.3 feet, right?";
     /// let expected = &["The", "quick", "brown", "can't", "jump", "32.3", "feet", "right"];
     ///
-    /// let mut lexicon = Lexicon::new(SplitMode::UnicodeWords);
+    /// let mut lexicon = Lexicon::new(Split::UnicodeWords);
     /// lexicon.extract_words(text, |_| true);
     ///
     /// assert_eq!(lexicon.words(), expected);
@@ -159,11 +157,11 @@ pub enum SplitMode {
     /// before the text splitting happens.
     ///
     /// ```
-    /// # use genrepass::{Lexicon, SplitMode};
+    /// # use genrepass::{Lexicon, Split};
     /// let text = "The ⚡quick⚡ (\"brown\") 🐒 can't❌jump 32.3 feet, right?";
     /// let expected = &["The", "zap", "quickzap", "brown", "monkey", "can'tx", "jump", "32.3", "feet", "right"];
     ///
-    /// let mut lexicon = Lexicon::new(SplitMode::UnicodeWords);
+    /// let mut lexicon = Lexicon::new(Split::UnicodeWords);
     /// lexicon.deunicode = true;
     /// lexicon.extract_words(text, |_| true);
     ///
@@ -178,24 +176,24 @@ pub enum SplitMode {
     /// # Examples
     ///
     /// ```
-    /// # use genrepass::{Lexicon, SplitMode};
+    /// # use genrepass::{Lexicon, Split};
     /// let text = "The ⚡quick⚡ (\"brown\")    🐒 can't❌jump too high.";
     /// let expected = &["The", " ", "⚡", "quick", "⚡", " ", "(", "\"", "brown", "\"", ")", "    ", "🐒", " ", "can't", "❌", "jump", " ", "too", " ", "high", "."];
     ///
-    /// let mut lexicon = Lexicon::new(SplitMode::WordBounds);
+    /// let mut lexicon = Lexicon::new(Split::WordBounds);
     /// lexicon.extract_words(text, |_| true);
     ///
     /// assert_eq!(lexicon.words(), expected);
     /// ```
     ///
-    /// This is more useful than [`SplitMode::UnicodeWords`] when you want to preserve the emoji as their own words.
+    /// This is more useful than [`Split::UnicodeWords`] when you want to preserve the emoji as their own words.
     ///
     /// ```
-    /// # use genrepass::{Lexicon, SplitMode};
+    /// # use genrepass::{Lexicon, Split};
     /// let text = "The ⚡quick⚡ (\"brown\")    🐒 can't❌jump too high.";
     /// let expected = &["The", "⚡", "quick", "⚡", "brown", "🐒", "can't", "❌", "jump", "too", "high", "."];
     ///
-    /// let mut lexicon = Lexicon::new(SplitMode::WordBounds);
+    /// let mut lexicon = Lexicon::new(Split::WordBounds);
     /// lexicon.extract_words(text, |c| c != '(' && c != ')' && c != '"' && !c.is_whitespace());
     ///
     /// assert_eq!(lexicon.words(), expected);
@@ -205,16 +203,16 @@ pub enum SplitMode {
     ///
     /// 'Whitespace' is defined according to the terms of the Unicode Derived
     /// Core Property `White_Space`. If you only want to split on ASCII whitespace
-    /// instead, use [`SplitMode::AsciiWhitespace`].
+    /// instead, use [`Split::AsciiWhitespace`].
     ///
     /// # Example
     ///
     /// ```
-    /// # use genrepass::{Lexicon, SplitMode};
+    /// # use genrepass::{Lexicon, Split};
     /// let text = "The ⚡quick⚡    (\"brown\")    🐒 can't❌jump 32.3\u{3000}feet, right?";
     /// let expected = &["The", "⚡quick⚡", "(\"brown\")", "🐒", "can't❌jump", "32.3", "feet,", "right?"];
     ///
-    /// let mut lexicon = Lexicon::new(SplitMode::UnicodeWhitespace);
+    /// let mut lexicon = Lexicon::new(Split::UnicodeWhitespace);
     /// lexicon.extract_words(text, |_| true);
     ///
     /// assert_eq!(lexicon.words(), expected);
@@ -222,16 +220,16 @@ pub enum SplitMode {
     UnicodeWhitespace,
     /// Splits the text into words separated by any amount of ASCII whitespace.
     ///
-    /// Supposed to be faster than [`SplitMode::UnicodeWhitespace`].
+    /// Supposed to be faster than [`Split::UnicodeWhitespace`].
     ///
     /// # Example
     ///
     /// ```
-    /// # use genrepass::{Lexicon, SplitMode};
+    /// # use genrepass::{Lexicon, Split};
     /// let text = "The ⚡quick⚡  \u{2009}  (\"brown\")    🐒\tcan't❌jump\n\t32.3\u{3000}feet, right?";
     /// let expected = &["The", "⚡quick⚡", "\u{2009}", "(\"brown\")", "🐒", "can't❌jump", "32.3\u{3000}feet,", "right?"];
     ///
-    /// let mut lexicon = Lexicon::new(SplitMode::AsciiWhitespace);
+    /// let mut lexicon = Lexicon::new(Split::AsciiWhitespace);
     /// lexicon.extract_words(text, |_| true);
     ///
     /// assert_eq!(lexicon.words(), expected);

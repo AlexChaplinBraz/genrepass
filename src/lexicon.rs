@@ -1,6 +1,6 @@
 use deunicode::deunicode;
 use rand::{seq::SliceRandom, thread_rng};
-use std::mem::take;
+use std::mem::{swap, take};
 use unicode_segmentation::UnicodeSegmentation;
 
 /// A list of words used for password generation.
@@ -9,17 +9,22 @@ use unicode_segmentation::UnicodeSegmentation;
 pub struct Lexicon {
     /// The way to split the text into words.
     pub split: Split,
-    /// Flag for transliterating any Unicode text into ASCII text during extraction.
+
+    /// Flag for transliterating any Unicode text into ASCII text during word extraction.
     ///
-    /// This also translates emoji into text. For example:
-    ///   * 😃 -> smiley
-    ///   * 🥫 -> canned food
-    ///   * 📬 -> mailbox with mail
-    ///   * 🇪🇸 -> ES
-    ///
-    /// Keep in mind that deunicoding happens before word splitting,
-    /// so if the emoji turns into multiple words,
-    /// they will be split according to the split mode.
+    /// ```
+    /// use deunicode::deunicode;
+    /// assert_eq!(deunicode("😃"), "smiley");
+    /// assert_eq!(deunicode("🥫"), "canned food");
+    /// assert_eq!(deunicode("📬"), "mailbox with mail");
+    /// assert_eq!(deunicode("🇪🇸"), "ES");
+    /// assert_eq!(deunicode("Æneid"), "AEneid");
+    /// assert_eq!(deunicode("étude"), "etude");
+    /// assert_eq!(deunicode("北亰"), "Bei Jing");
+    /// assert_eq!(deunicode("ᔕᓇᓇ"), "shanana");
+    /// assert_eq!(deunicode("げんまい茶"), "genmaiCha");
+    /// assert_eq!(deunicode("…"), "...");
+    /// ```
     ///
     /// # Guarantees and Warnings
     ///
@@ -40,9 +45,12 @@ pub struct Lexicon {
     ///   * Many Unicode characters transliterate to multi-character strings. For
     ///     example, 北 is transliterated as "Bei ".
     ///   * Han characters are mapped to Mandarin, and will be mostly illegible to Japanese readers.
-    pub deunicode: bool,
+    pub deunicode: Deunicode,
+
     /// Flag for randomising all the words at the end of word extraction.
     pub randomise: bool,
+
+    /// All the extracted words.
     words: Vec<String>,
 }
 
@@ -71,7 +79,7 @@ impl Lexicon {
         }
 
         let deunicoded;
-        let text = if self.deunicode {
+        let text = if let Deunicode::BeforeSplitting = self.deunicode {
             deunicoded = deunicode(text);
             &deunicoded
         } else {
@@ -86,13 +94,28 @@ impl Lexicon {
         };
 
         for word in split_words.iter_mut() {
+            if let Deunicode::BeforeFiltering = self.deunicode {
+                let mut deunicoded = deunicode(word);
+                swap(word, &mut deunicoded);
+            }
+
             word.retain(&mut filter);
 
             if word.is_empty() {
                 continue;
             }
 
-            self.words.push(take(word));
+            if let Deunicode::AfterFiltering = self.deunicode {
+                let mut deunicoded = deunicode(word);
+
+                if deunicoded.is_empty() {
+                    continue;
+                } else {
+                    self.words.push(take(&mut deunicoded));
+                }
+            } else {
+                self.words.push(take(word));
+            }
         }
 
         if self.randomise {
@@ -141,6 +164,9 @@ pub enum Split {
     ///
     /// # Examples
     ///
+    /// If emoji are present, they are only acknowledged for their word boundaries
+    /// and ignored as they're not alphanumeric characters.
+    ///
     /// ```
     /// # use genrepass::{Lexicon, Split};
     /// let text = "The ⚡quick⚡ (\"brown\") 🐒 can't❌jump 32.3 feet, right?";
@@ -152,23 +178,23 @@ pub enum Split {
     /// assert_eq!(lexicon.words(), expected);
     /// ```
     ///
-    /// If emoji are present, they're just treated as word boundaries.
-    /// Enable [`deunicode`](Lexicon#structfield.deunicode) to turn all non-ASCII into ASCII
-    /// before the text splitting happens.
+    /// Enabling deunicoding produces subpar results.
+    /// Look at [`Split::WordBounds`] for that.
     ///
     /// ```
-    /// # use genrepass::{Lexicon, Split};
+    /// # use genrepass::{Deunicode, Lexicon, Split};
     /// let text = "The ⚡quick⚡ (\"brown\") 🐒 can't❌jump 32.3 feet, right?";
     /// let expected = &["The", "zap", "quickzap", "brown", "monkey", "can'tx", "jump", "32.3", "feet", "right"];
     ///
     /// let mut lexicon = Lexicon::new(Split::UnicodeWords);
-    /// lexicon.deunicode = true;
+    /// lexicon.deunicode = Deunicode::BeforeSplitting;
     /// lexicon.extract_words(text, |_| true);
     ///
     /// assert_eq!(lexicon.words(), expected);
     /// ```
     #[default]
     UnicodeWords,
+
     /// Splits the text based on
     /// [UAX#29 word boundaries](http://www.unicode.org/reports/tr29/#Word_Boundaries)
     /// such that the concatenation of the words is just the original text.
@@ -178,12 +204,19 @@ pub enum Split {
     /// ```
     /// # use genrepass::{Lexicon, Split};
     /// let text = "The ⚡quick⚡ (\"brown\")    🐒 can't❌jump too high.";
-    /// let expected = &["The", " ", "⚡", "quick", "⚡", " ", "(", "\"", "brown", "\"", ")", "    ", "🐒", " ", "can't", "❌", "jump", " ", "too", " ", "high", "."];
+    /// let expected = &[
+    ///     "The", " ", "⚡", "quick", "⚡", " ", "(", "\"", "brown", "\"", ")", "    ", "🐒", " ",
+    ///     "can't", "❌", "jump", " ", "too", " ", "high", ".",
+    /// ];
     ///
     /// let mut lexicon = Lexicon::new(Split::WordBounds);
     /// lexicon.extract_words(text, |_| true);
     ///
     /// assert_eq!(lexicon.words(), expected);
+    ///
+    /// // Then if we concatenate the split words, we get back the initial string.
+    /// assert_eq!(text, lexicon.words().join(""));
+    ///
     /// ```
     ///
     /// This is more useful than [`Split::UnicodeWords`] when you want to preserve the emoji as their own words.
@@ -198,7 +231,23 @@ pub enum Split {
     ///
     /// assert_eq!(lexicon.words(), expected);
     /// ```
+    ///
+    /// This is also the best way to deunicode words after splitting them,
+    /// so that the translated emoji become their own words.
+    ///
+    /// ```
+    /// # use genrepass::{Deunicode, Lexicon, Split};
+    /// let text = "The ⚡quick⚡ (\"brown\")    🐒 can't❌jump too high.";
+    /// let expected = &["The", "zap", "quick", "zap", "brown", "monkey", "can't", "x", "jump", "too", "high", "."];
+    ///
+    /// let mut lexicon = Lexicon::new(Split::WordBounds);
+    /// lexicon.deunicode = Deunicode::BeforeFiltering;
+    /// lexicon.extract_words(text, |c| c != '(' && c != ')' && c != '"' && !c.is_whitespace());
+    ///
+    /// assert_eq!(lexicon.words(), expected);
+    /// ```
     WordBounds,
+
     /// Splits the text into words separated by any amount of Unicode whitespace.
     ///
     /// 'Whitespace' is defined according to the terms of the Unicode Derived
@@ -209,7 +258,7 @@ pub enum Split {
     ///
     /// ```
     /// # use genrepass::{Lexicon, Split};
-    /// let text = "The ⚡quick⚡    (\"brown\")    🐒 can't❌jump 32.3\u{3000}feet, right?";
+    /// let text = "The ⚡quick⚡  \u{2009}  (\"brown\")    🐒 can't❌jump 32.3\u{3000}feet, right?";
     /// let expected = &["The", "⚡quick⚡", "(\"brown\")", "🐒", "can't❌jump", "32.3", "feet,", "right?"];
     ///
     /// let mut lexicon = Lexicon::new(Split::UnicodeWhitespace);
@@ -218,6 +267,7 @@ pub enum Split {
     /// assert_eq!(lexicon.words(), expected);
     /// ```
     UnicodeWhitespace,
+
     /// Splits the text into words separated by any amount of ASCII whitespace.
     ///
     /// Supposed to be faster than [`Split::UnicodeWhitespace`].
@@ -235,6 +285,24 @@ pub enum Split {
     /// assert_eq!(lexicon.words(), expected);
     /// ```
     AsciiWhitespace,
+}
+
+/// When the deunicoding happens.
+#[derive(Debug, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+pub enum Deunicode {
+    /// No deunicoding takes place. The default when creating a [`Lexicon`].
+    #[default]
+    Deactivated,
+
+    /// Deunicode the entire text before splitting.
+    BeforeSplitting,
+
+    /// Deunicode each split word before filtering characters.
+    BeforeFiltering,
+
+    /// Deunicode each split word after it had been filtered.
+    AfterFiltering,
 }
 
 /// Some reasonable character filtering options.

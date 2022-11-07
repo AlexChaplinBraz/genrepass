@@ -19,8 +19,10 @@ rand = "0.8"
 rayon = { version = "1", optional = true }
 regex = "1"
 serde = { version = "1", features = ["derive"], optional = true }
+simdutf8 = "0.1"
 snafu = "0.7"
 unicode-segmentation = "1"
+walkdir = "2"
 
 [build-dependencies]
 rustc_version = "0.4"

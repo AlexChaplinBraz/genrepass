@@ -1,7 +1,14 @@
 use deunicode::deunicode;
 use rand::{seq::SliceRandom, thread_rng};
-use std::mem::{swap, take};
+use simdutf8::compat::from_utf8;
+use std::{
+    fs::{read_to_string, File},
+    io::Read,
+    mem::{swap, take},
+    path::Path,
+};
 use unicode_segmentation::UnicodeSegmentation;
+use walkdir::{DirEntry, WalkDir};
 
 /// A list of words used for password generation.
 #[derive(Debug, Default)]
@@ -121,6 +128,111 @@ impl Lexicon {
         if self.randomise {
             self.randomise();
         }
+    }
+
+    /// Read texts from paths and extract the words.
+    ///
+    /// The way this method is configured:
+    /// * Symbolic links aren't followed
+    /// * Directories and files returning any kind of IO error are silently skipped
+    /// * Hidden directories and files (meaning they start with `.`) are ignored,
+    ///   except if you pass the path to the hidden directory or file directly
+    /// * Some common extensions are ignored by default because they can't be parsed to UTF-8
+    /// * Extensions are compared ignoring ASCII case, with just the text after the last `.`
+    /// * All the files that pass the filtering are checked for if they are valid UTF-8
+    ///   by reading a few bytes at the start of the file
+    ///
+    /// See [`Lexicon::extract_words()`] for how the words are extracted.
+    pub fn extract_words_from_path<F>(
+        &mut self,
+        paths: &[impl AsRef<Path>],
+        depth: usize,
+        extensions: Option<&[&str]>,
+        filter: F,
+    ) where
+        F: FnMut(char) -> bool,
+    {
+        // A list of extensions that could appear in something like ~/Documents
+        // but that are not able to be read as UTF-8 anyway,
+        // some even giving false positives like PDF and MP3.
+        let ignored_extensions = [
+            "pdf", "epub", "mobi", "azw3", "doc", "docx", "mp3", "mp4", "avi", "ogg", "jpg",
+            "jpeg", "png", "gif",
+        ];
+
+        let filter_entry = |e: &DirEntry| {
+            if e.depth() != 0
+                && e.file_name()
+                    .to_str()
+                    .map(|s| s.starts_with("."))
+                    .unwrap_or_default()
+            {
+                false
+            } else if e.file_type().is_file() {
+                match e.file_name().to_str() {
+                    Some(s) => match s.rsplit_once('.') {
+                        Some((_, ext)) => {
+                            if ignored_extensions
+                                .iter()
+                                .any(|allowed_ext| allowed_ext.eq_ignore_ascii_case(ext))
+                            {
+                                false
+                            } else {
+                                match extensions {
+                                    Some(extensions) => extensions
+                                        .iter()
+                                        .any(|allowed_ext| allowed_ext.eq_ignore_ascii_case(ext)),
+                                    None => true,
+                                }
+                            }
+                        }
+                        None => !extensions.is_some(),
+                    },
+                    None => false,
+                }
+            } else {
+                true
+            }
+        };
+
+        let mut texts = String::new();
+        let mut buf = [0; 64];
+
+        for path in paths {
+            for entry in WalkDir::new(&path)
+                .max_depth(depth)
+                .into_iter()
+                .filter_entry(|e| filter_entry(e))
+                .filter_map(|e| e.ok())
+            {
+                if entry.file_type().is_file() {
+                    if let Ok(mut file) = File::open(entry.path()) {
+                        if let Ok(_) = file.read(&mut buf) {
+                            match from_utf8(&buf) {
+                                Ok(_) => {
+                                    if let Ok(text) = read_to_string(entry.path()) {
+                                        texts.push('\n');
+                                        texts.push_str(&text);
+                                    }
+                                }
+                                Err(e) => {
+                                    if e.valid_up_to() >= 56 {
+                                        if let Ok(text) = read_to_string(entry.path()) {
+                                            texts.push('\n');
+                                            texts.push_str(&text);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    buf = [0; 64];
+                }
+            }
+        }
+
+        self.extract_words(&texts, filter);
     }
 
     /// Shuffle the words.

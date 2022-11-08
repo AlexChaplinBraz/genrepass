@@ -26,6 +26,8 @@ walkdir = { version = "2", optional = true }
 
 [features]
 from_path = ["dep:walkdir", "dep:simdutf8"]
+rayon = ["dep:rayon"]
+serde = ["dep:serde"]
 
 [build-dependencies]
 rustc_version = "0.4"

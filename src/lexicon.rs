@@ -1,14 +1,7 @@
 use deunicode::deunicode;
 use rand::{seq::SliceRandom, thread_rng};
-use simdutf8::compat::from_utf8;
-use std::{
-    fs::{read_to_string, File},
-    io::Read,
-    mem::{swap, take},
-    path::Path,
-};
+use std::mem::{swap, take};
 use unicode_segmentation::UnicodeSegmentation;
-use walkdir::{DirEntry, WalkDir};
 
 /// A list of words used for password generation.
 #[derive(Debug, Default)]
@@ -143,15 +136,23 @@ impl Lexicon {
     ///   by reading a few bytes at the start of the file
     ///
     /// See [`Lexicon::extract_words()`] for how the words are extracted.
+    #[cfg(feature = "from_path")]
     pub fn extract_words_from_path<F>(
         &mut self,
-        paths: &[impl AsRef<Path>],
+        paths: &[impl AsRef<std::path::Path>],
         depth: usize,
         extensions: Option<&[&str]>,
         filter: F,
     ) where
         F: FnMut(char) -> bool,
     {
+        use simdutf8::compat::from_utf8;
+        use std::{
+            fs::{read_to_string, File},
+            io::Read,
+        };
+        use walkdir::{DirEntry, WalkDir};
+
         // A list of extensions that could appear in something like ~/Documents
         // but that are not able to be read as UTF-8 anyway,
         // some even giving false positives like PDF and MP3.

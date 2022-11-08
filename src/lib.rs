@@ -64,6 +64,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 
 - `serde` — Enables the serialisation and deserialisation of [`PasswordSettings`] and [`Lexicon`]
 - `rayon` — Enables parallelisation with [`PasswordSettings::generate_parallel()`]
+- `from_path` — Enables [`Lexicon::extract_words_from_path()`]
 */
 
 mod helpers;

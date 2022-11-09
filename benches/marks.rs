@@ -1,5 +1,5 @@
 use brunch::{Bench, Benches};
-use genrepass::PasswordSettings;
+use genrepass::{CharFilter, Lexicon, PasswordSettings, Split};
 use std::time::Duration;
 
 fn main() {
@@ -7,7 +7,7 @@ fn main() {
     let mut ps_src = PasswordSettings::default();
     let mut ps_examples = PasswordSettings::default();
 
-    println!("Parsing words from path:");
+    println!("Extracting words from path (original):");
 
     let mut benches = Benches::default();
 
@@ -42,6 +42,83 @@ fn main() {
     let license_word_len = ps_license.get_words().len();
     let src_word_len = ps_src.get_words().len();
     let examples_word_len = ps_examples.get_words().len();
+
+    println!(
+        "\
+    Words extracted from:
+           LICENSE: {license_word_len}
+              src/: {src_word_len}
+         examples/: {examples_word_len}
+    "
+    );
+
+    println!("Extracting words from path (Lexicon):");
+
+    let mut benches = Benches::default();
+
+    let mut lexicon_license = Lexicon::new(Split::UnicodeWords);
+    let mut lexicon_src = Lexicon::new(Split::UnicodeWords);
+    let mut lexicon_examples = Lexicon::new(Split::UnicodeWords);
+
+    benches.push(
+        Bench::new("load from path: LICENSE")
+            .with_samples(200)
+            .run(|| {
+                lexicon_license.clear_words();
+                lexicon_license.extract_words_from_path(
+                    &["LICENSE"],
+                    99,
+                    None,
+                    CharFilter::AsciiWithoutDigitsOrPunctuation.closure(),
+                );
+            }),
+    );
+    benches.push(
+        Bench::new("load from path: src/")
+            .with_samples(200)
+            .run(|| {
+                lexicon_src.clear_words();
+                lexicon_src.extract_words_from_path(
+                    &["src"],
+                    99,
+                    None,
+                    CharFilter::AsciiWithoutDigitsOrPunctuation.closure(),
+                );
+            }),
+    );
+    benches.push(
+        Bench::new("load from path: examples/")
+            .with_samples(200)
+            .with_timeout(Duration::from_secs(300))
+            .run(|| {
+                lexicon_examples.clear_words();
+                lexicon_examples.extract_words_from_path(
+                    &["examples"],
+                    99,
+                    None,
+                    CharFilter::AsciiWithoutDigitsOrPunctuation.closure(),
+                );
+            }),
+    );
+
+    benches.finish();
+
+    let license_word_len = lexicon_license.words().len();
+    let src_word_len = lexicon_src.words().len();
+    let examples_word_len = lexicon_examples.words().len();
+
+    println!(
+        "\
+Words extracted from:
+       LICENSE: {license_word_len}
+          src/: {src_word_len}
+     examples/: {examples_word_len}
+"
+    );
+
+    if true {
+        return;
+    }
 
     println!("Single-threaded generation:");
 

@@ -130,8 +130,9 @@ impl Lexicon {
     /// * Directories and files returning any kind of IO error are silently skipped
     /// * Hidden directories and files (meaning they start with `.`) are ignored,
     ///   except if you pass the path to the hidden directory or file directly
-    /// * Some common extensions are ignored by default because they can't be parsed to UTF-8
+    /// * Some common extensions are ignored by default because they can't be parsed to UTF-8 anyway
     /// * Extensions are compared ignoring ASCII case, with just the text after the last `.`
+    /// * Passing a path to a file ignores all filtering
     /// * All the files that pass the filtering are checked for if they are valid UTF-8
     ///   by reading a few bytes at the start of the file
     ///
@@ -162,7 +163,9 @@ impl Lexicon {
         ];
 
         let filter_entry = |e: &DirEntry| {
-            if e.depth() != 0
+            if e.depth() == 0 && e.file_type().is_file() {
+                true
+            } else if e.depth() != 0
                 && e.file_name()
                     .to_str()
                     .map(|s| s.starts_with("."))

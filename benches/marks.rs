@@ -33,7 +33,12 @@ fn main() {
             .with_timeout(Duration::from_secs(300))
             .run(|| {
                 ps_examples.clear_words();
-                ps_examples.get_words_from_path("examples").unwrap();
+                ps_examples
+                    .get_words_from_path("examples/egui-app/src")
+                    .unwrap();
+                ps_examples
+                    .get_words_from_path("examples/egui-app/Cargo.toml")
+                    .unwrap();
             }),
     );
 
@@ -45,11 +50,11 @@ fn main() {
 
     println!(
         "\
-    Words extracted from:
-           LICENSE: {license_word_len}
-              src/: {src_word_len}
-         examples/: {examples_word_len}
-    "
+Words extracted from:
+       LICENSE: {license_word_len}
+          src/: {src_word_len}
+     examples/: {examples_word_len}
+"
     );
 
     println!("Extracting words from path (Lexicon):");
@@ -65,12 +70,7 @@ fn main() {
             .with_samples(200)
             .run(|| {
                 lexicon_license.clear_words();
-                lexicon_license.extract_words_from_path(
-                    &["LICENSE"],
-                    99,
-                    None,
-                    CharFilter::AsciiWithoutDigitsOrPunctuation.closure(),
-                );
+                lexicon_license.extract_words_from_path(&["LICENSE"], 0, None, |_| true);
             }),
     );
     benches.push(
@@ -80,7 +80,7 @@ fn main() {
                 lexicon_src.clear_words();
                 lexicon_src.extract_words_from_path(
                     &["src"],
-                    99,
+                    1,
                     None,
                     CharFilter::AsciiWithoutDigitsOrPunctuation.closure(),
                 );
@@ -94,8 +94,8 @@ fn main() {
                 lexicon_examples.clear_words();
                 lexicon_examples.extract_words_from_path(
                     &["examples"],
-                    99,
-                    None,
+                    3,
+                    Some(&["rs", "toml"]),
                     CharFilter::AsciiWithoutDigitsOrPunctuation.closure(),
                 );
             }),

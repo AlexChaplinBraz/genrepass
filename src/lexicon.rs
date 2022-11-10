@@ -86,14 +86,19 @@ impl Lexicon {
             text
         };
 
-        let mut split_words: Vec<String> = match self.split {
+        let mut split_words: Vec<String> = match &self.split {
             Split::UnicodeWords => text.unicode_words().map(str::to_string).collect(),
             Split::WordBounds => text.split_word_bounds().map(str::to_string).collect(),
             Split::UnicodeWhitespace => text.split_whitespace().map(str::to_string).collect(),
             Split::AsciiWhitespace => text.split_ascii_whitespace().map(str::to_string).collect(),
+            Split::Chars(chars) => text.split(&chars[..]).map(str::to_string).collect(),
         };
 
         for word in split_words.iter_mut() {
+            if word.is_empty() {
+                continue;
+            }
+
             if let Deunicode::BeforeFiltering = self.deunicode {
                 let mut deunicoded = deunicode(word);
                 swap(word, &mut deunicoded);
@@ -401,6 +406,22 @@ pub enum Split {
     /// assert_eq!(lexicon.words(), expected);
     /// ```
     AsciiWhitespace,
+
+    /// Splits the text on any occurrence of the characters.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use genrepass::{Lexicon, Split};
+    /// let text = "The ⚡quick⚡  \u{2009}  (\"brown\")    🐒\tcan't❌jump\n\t32.3\u{3000}feet, right?";
+    /// let expected = &["The", "⚡quick⚡", "(\"brown\")", "🐒", "can't", "jump", "32.3", "feet,", "right?"];
+    ///
+    /// let mut lexicon = Lexicon::new(Split::Chars(vec![' ', '\t', '\n', '\u{2009}', '\u{3000}', '❌']));
+    /// lexicon.extract_words(text, |_| true);
+    ///
+    /// assert_eq!(lexicon.words(), expected);
+    /// ```
+    Chars(Vec<char>),
 }
 
 /// When the deunicoding happens.

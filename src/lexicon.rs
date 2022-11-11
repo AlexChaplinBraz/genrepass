@@ -267,6 +267,15 @@ impl Lexicon {
     pub fn remove_word_at(&mut self, index: usize) {
         self.words.remove(index);
     }
+
+    /// Moves all the words of `lexicon` into `self`, leaving `lexicon` empty.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the new capacity exceeds `isize::MAX` bytes.
+    pub fn append_words(&mut self, lexicon: &mut Lexicon) {
+        self.words.append(&mut lexicon.words);
+    }
 }
 
 /// The way to split the text into words.

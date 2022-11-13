@@ -3,13 +3,7 @@ use deunicode::deunicode;
 use rand::{seq::SliceRandom, thread_rng};
 use regex::Regex;
 use snafu::{ensure, Snafu};
-use std::{
-    fs,
-    fs::metadata,
-    ops::RangeInclusive,
-    path::Path,
-    sync::{RwLock, RwLockReadGuard},
-};
+use std::{fs, fs::metadata, ops::RangeInclusive, path::Path};
 
 /// Used for configuring the password generator.
 #[derive(Debug)]
@@ -168,7 +162,7 @@ pub struct PasswordSettings {
     /// **Default: false**
     pub dont_lower: bool,
 
-    pub(crate) words: RwLock<Vec<String>>,
+    pub(crate) words: Vec<String>,
 }
 
 impl Default for PasswordSettings {
@@ -191,7 +185,7 @@ impl Default for PasswordSettings {
             force_lower: false,
             dont_upper: false,
             dont_lower: false,
-            words: RwLock::new(Vec::new()),
+            words: Vec::new(),
         }
     }
 }
@@ -266,12 +260,12 @@ impl PasswordSettings {
 
         for caps in re.captures_iter(&text) {
             if let Some(cap) = caps.get(0) {
-                self.words.write().unwrap().push(cap.as_str().to_owned());
+                self.words.push(cap.as_str().to_owned());
             }
         }
 
         if self.randomise {
-            self.words.write().unwrap().shuffle(&mut thread_rng());
+            self.words.shuffle(&mut thread_rng());
         }
 
         Ok(())
@@ -307,23 +301,23 @@ impl PasswordSettings {
 
         for caps in re.captures_iter(ascii) {
             if let Some(cap) = caps.get(0) {
-                self.words.write().unwrap().push(cap.as_str().to_owned());
+                self.words.push(cap.as_str().to_owned());
             }
         }
 
         if self.randomise {
-            self.words.write().unwrap().shuffle(&mut thread_rng());
+            self.words.shuffle(&mut thread_rng());
         }
     }
 
     /// Get a reference to the vector of words.
-    pub fn get_words(&self) -> RwLockReadGuard<Vec<String>> {
-        self.words.read().unwrap()
+    pub fn get_words(&self) -> &[String] {
+        &self.words
     }
 
     /// Clear the vector of words.
     pub fn clear_words(&mut self) {
-        self.words.write().unwrap().clear();
+        self.words.clear();
     }
 
     /// Remove a word at index.
@@ -332,7 +326,7 @@ impl PasswordSettings {
     ///
     /// Panics if `index` is out of bounds.
     pub fn remove_word_at(&mut self, index: usize) {
-        self.words.write().unwrap().remove(index);
+        self.words.remove(index);
     }
 
     /// Generate a vector of passwords.
@@ -342,7 +336,7 @@ impl PasswordSettings {
     /// Panics if any of the inclusive ranges are empty (i.e. end < start).
     pub fn generate(&self) -> Result<Vec<String>, NotEnoughWordsError> {
         ensure!(
-            !self.words.read().unwrap().is_empty() && self.words.read().unwrap().len() > 1,
+            !self.words.is_empty() && self.words.len() > 1,
             NotEnoughWordsSnafu
         );
 
@@ -366,7 +360,7 @@ impl PasswordSettings {
         use std::sync::mpsc::channel;
 
         ensure!(
-            !self.words.read().unwrap().is_empty() && self.words.read().unwrap().len() > 1,
+            !self.words.is_empty() && self.words.len() > 1,
             NotEnoughWordsSnafu
         );
 

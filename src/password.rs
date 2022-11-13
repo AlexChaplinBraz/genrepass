@@ -110,9 +110,9 @@ impl Password {
 
     fn get_pass_string(&mut self, config: &PasswordSettings) {
         let mut rng = thread_rng();
-        let start_index = rng.gen_range(0..config.words.read().unwrap().len());
+        let start_index = rng.gen_range(0..config.words.len());
 
-        let text = config.words.read().unwrap();
+        let text = &config.words;
         let mut words = text.iter().skip(start_index).peekable();
 
         loop {

@@ -52,7 +52,7 @@ impl App for Gui {
                 ui.with_layout(Layout::top_down_justified(Align::Center), |ui| {
                     ui.columns(2, |columns| {
                         columns[0].vertical_centered_justified(|ui| {
-                            if self.settings.get_words().len() <= 1 {
+                            if self.settings.words().len() <= 1 {
                                 ui.add_enabled(false, Button::new("Generate"))
                                     .on_disabled_hover_text(
                                         "Must have more than one word for generation",
@@ -66,7 +66,7 @@ impl App for Gui {
                             }
                         });
                         columns[1].with_layout(Layout::top_down_justified(Align::Center), |ui| {
-                            if self.settings.get_words().len() <= 1 {
+                            if self.settings.words().len() <= 1 {
                                 ui.add_enabled(false, Button::new("Generate parallel"))
                                     .on_disabled_hover_text(
                                         "Must have more than one word for generation",
@@ -105,7 +105,7 @@ impl App for Gui {
                         .on_hover_text("Reset the settings to their defaults")
                         .clicked()
                     {
-                        let words = self.settings.get_words().join(" ");
+                        let words = self.settings.words().join(" ");
                         self.settings = Default::default();
                         self.settings.get_words_from_str(&words);
                     }
@@ -260,7 +260,7 @@ impl App for Gui {
 
             ScrollArea::vertical().show(ui, |ui| {
                 ui.horizontal_wrapped(|ui| {
-                    for (index, word) in self.settings.get_words().iter().enumerate() {
+                    for (index, word) in self.settings.words().iter().enumerate() {
                         if ui.button(word).on_hover_text("Click to remove").clicked() {
                             self.word_index_to_remove = Some(index);
                         }

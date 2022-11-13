@@ -44,9 +44,9 @@ fn main() {
 
     benches.finish();
 
-    let license_word_len = ps_license.get_words().len();
-    let src_word_len = ps_src.get_words().len();
-    let examples_word_len = ps_examples.get_words().len();
+    let license_word_len = ps_license.words().len();
+    let src_word_len = ps_src.words().len();
+    let examples_word_len = ps_examples.words().len();
 
     println!(
         "\

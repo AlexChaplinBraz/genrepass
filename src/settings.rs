@@ -311,7 +311,7 @@ impl PasswordSettings {
     }
 
     /// Get a reference to the vector of words.
-    pub fn get_words(&self) -> &[String] {
+    pub fn words(&self) -> &[String] {
         &self.words
     }
 

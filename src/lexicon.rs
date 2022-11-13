@@ -454,15 +454,108 @@ pub enum Deunicode {
 /// Some reasonable character filtering options.
 #[derive(Debug)]
 pub enum CharFilter {
+    /// Only characters in the ASCII range are allowed.
+    ///
+    /// Additionally, all whitespace and control characters are removed.
     Ascii,
+
+    /// Only characters in the ASCII range are allowed, except for punctuation.
+    ///
+    /// Punctuation refers to:
+    /// - U+0021 ..= U+002F `! " # $ % & ' ( ) * + , - . /`, or
+    /// - U+003A ..= U+0040 `: ; < = > ? @`, or
+    /// - U+005B ..= U+0060 ``[ \ ] ^ _ ` ``, or
+    /// - U+007B ..= U+007E `{ | } ~`
+    ///
+    /// Additionally, all whitespace and control characters are removed.
     AsciiWithoutPunctuation,
+
+    /// Only characters in the ASCII range are allowed, except for digits.
+    ///
+    /// Digits refers to U+0030 '0' ..= U+0039 '9'.
+    ///
+    /// Additionally, all whitespace and control characters are removed.
     AsciiWithoutDigits,
+
+    /// Only characters in the ASCII range are allowed, except for digits and punctuation.
+    ///
+    /// Digits refers to U+0030 '0' ..= U+0039 '9'.
+    ///
+    /// Punctuation refers to:
+    /// - U+0021 ..= U+002F `! " # $ % & ' ( ) * + , - . /`, or
+    /// - U+003A ..= U+0040 `: ; < = > ? @`, or
+    /// - U+005B ..= U+0060 ``[ \ ] ^ _ ` ``, or
+    /// - U+007B ..= U+007E `{ | } ~`
+    ///
+    /// Additionally, all whitespace and control characters are removed.
     AsciiWithoutDigitsOrPunctuation,
+
+    /// Practically everything is allowed except for whitespace and control characters.
     Unicode,
+
+    /// Practically everything is allowed except for ASCII digits.
+    ///
+    /// ASCII digits refers to U+0030 '0' ..= U+0039 '9'.
+    ///
+    /// Additionally, all whitespace and control characters are removed.
     UnicodeWithoutAsciiDigits,
+
+    /// Practically everything is allowed except for numbers.
+    ///
+    /// The general categories for numbers (`Nd` for decimal digits, `Nl` for letter-like numeric
+    /// characters, and `No` for other numeric characters) are specified in the [Unicode Character
+    /// Database] [`UnicodeData.txt`]. Note that this means ideographic numbers like '三'
+    /// are considered alphabetic, not numeric.
+    ///
+    /// Additionally, all whitespace and control characters are removed.
+    ///
+    /// [Unicode Character Database]: https://www.unicode.org/reports/tr44/
+    /// [`UnicodeData.txt`]: https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
     UnicodeWithoutNumbers,
+
+    /// Practically everything is allowed except for ASCII punctuation.
+    ///
+    /// ASCII punctuation refers to:
+    /// - U+0021 ..= U+002F `! " # $ % & ' ( ) * + , - . /`, or
+    /// - U+003A ..= U+0040 `: ; < = > ? @`, or
+    /// - U+005B ..= U+0060 ``[ \ ] ^ _ ` ``, or
+    /// - U+007B ..= U+007E `{ | } ~`
+    ///
+    /// Additionally, all whitespace and control characters are removed.
     UnicodeWithoutAsciiPunctuation,
+
+    /// Practically everything is allowed except for ASCII digits and ASCII punctuation.
+    ///
+    /// ASCII digits refers to U+0030 '0' ..= U+0039 '9'.
+    ///
+    /// ASCII punctuation refers to:
+    /// - U+0021 ..= U+002F `! " # $ % & ' ( ) * + , - . /`, or
+    /// - U+003A ..= U+0040 `: ; < = > ? @`, or
+    /// - U+005B ..= U+0060 ``[ \ ] ^ _ ` ``, or
+    /// - U+007B ..= U+007E `{ | } ~`
+    ///
+    /// Additionally, all whitespace and control characters are removed.
     UnicodeWithoutAsciiDigitsOrAsciiPunctuation,
+
+    /// Practically everything is allowed except for numbers and ASCII punctuation.
+    ///
+    /// The general categories for numbers (`Nd` for decimal digits, `Nl` for letter-like numeric
+    /// characters, and `No` for other numeric characters) are specified in the [Unicode Character
+    /// Database] [`UnicodeData.txt`]. Note that this means ideographic numbers like '三'
+    /// are considered alphabetic, not numeric. Here are some examples:
+    /// - Numeric: ٣ 7 ৬ ¾ ①
+    /// - Not numeric: 藏 μ に 二 و
+    ///
+    /// ASCII punctuation refers to:
+    /// - U+0021 ..= U+002F `! " # $ % & ' ( ) * + , - . /`, or
+    /// - U+003A ..= U+0040 `: ; < = > ? @`, or
+    /// - U+005B ..= U+0060 ``[ \ ] ^ _ ` ``, or
+    /// - U+007B ..= U+007E `{ | } ~`
+    ///
+    /// Additionally, all whitespace and control characters are removed.
+    ///
+    /// [Unicode Character Database]: https://www.unicode.org/reports/tr44/
+    /// [`UnicodeData.txt`]: https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
     UnicodeWithoutNumbersOrAsciiPunctuation,
 }
 

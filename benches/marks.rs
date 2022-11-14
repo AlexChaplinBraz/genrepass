@@ -61,9 +61,9 @@ Words extracted from:
 
     let mut benches = Benches::default();
 
-    let mut lexicon_license = Lexicon::new(Split::UnicodeWords);
-    let mut lexicon_src = Lexicon::new(Split::UnicodeWords);
-    let mut lexicon_examples = Lexicon::new(Split::UnicodeWords);
+    let mut lexicon_license = Lexicon::new("LICENSE", Split::UnicodeWords);
+    let mut lexicon_src = Lexicon::new("src/", Split::UnicodeWords);
+    let mut lexicon_examples = Lexicon::new("examples/", Split::UnicodeWords);
 
     benches.push(
         Bench::new("load from path: LICENSE")

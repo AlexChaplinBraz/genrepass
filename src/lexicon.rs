@@ -7,6 +7,9 @@ use unicode_segmentation::UnicodeSegmentation;
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Lexicon {
+    /// Name of this collection of words.
+    pub name: String,
+
     /// The way to split the text into words.
     pub split: Split,
 
@@ -56,8 +59,12 @@ pub struct Lexicon {
 
 impl Lexicon {
     /// Create a new [`Lexicon`] with a specific split mode and everything turned off.
-    pub fn new(split: Split) -> Self {
+    pub fn new<S>(name: S, split: Split) -> Self
+    where
+        S: Into<String>,
+    {
         Self {
+            name: name.into(),
             split,
             ..Default::default()
         }

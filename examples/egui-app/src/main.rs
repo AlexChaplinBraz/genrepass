@@ -256,6 +256,7 @@ impl App for Gui {
 
             if let Some(index) = self.word_index_to_remove {
                 self.settings.remove_word_at(index);
+                self.word_index_to_remove = None;
             }
 
             ScrollArea::vertical().show(ui, |ui| {
